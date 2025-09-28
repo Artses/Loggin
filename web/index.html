@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Logs SSE</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #0f0; padding: 10px; }
+    #logs { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>📜 Logs em tempo real (SSE)</h2>
+  <div id="logs"></div>
+
+  <script>
+    const eventSource = new EventSource("http://localhost:8080/logs");
+    const logsDiv = document.getElementById("logs");
+
+    eventSource.onmessage = (event) => {
+      logsDiv.textContent += event.data + "\n";
+      window.scrollTo(0, document.body.scrollHeight);
+    };
+  </script>
+</body>
+</html>
