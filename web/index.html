@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Logs SSE</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #111;
+      color: #0f0;
+      padding: 10px;
+    }
+
+    #logs {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>📜 Logs em tempo real (SSE)</h2>
+  <label for="path">path logs</label>
+  <input id="path" placeholder="Digite o caminho do log" />
+  <button onclick="sendMessage()">Enviar</button>
+  <ul id="logs"></ul>
+  <script>
+      const socket = new WebSocket("ws://localhost:8000/wslogs");
+      const logsUl = document.getElementById("logs");
+
+    socket.onmessage = function(event) {
+      const li = document.createElement("li");
+      li.textContent = "Servidor: " + event.data;
+      logsUl.insertBefore(li, logsUl.firstChild);
+    };
+
+    function sendMessage() {
+      const input = document.getElementById("path");
+      const msg = input.value;
+      socket.send(msg); 
+      const li = document.createElement("li");
+      li.textContent = "Você: " + msg;
+      logsUl.insertBefore(li, logsUl.firstChild);
+      input.value = "";
+    }
+  </script>
+</body>
+</html>
