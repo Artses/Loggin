@@ -1,13 +1,12 @@
 package main
 
-import(
+import (
 	"fmt"
-
-	"github.com/gin-gonic/gin"
 	"loggin/internal/handlers"
+	"github.com/gin-gonic/gin"
 )
 
-func main (){
+func main() {
 
 	server := gin.Default()
 
@@ -17,11 +16,14 @@ func main (){
 		})
 	})
 
-	server.GET("/logs", handlers.SSEHandler)
+	server.GET("/wslogs", func(ctx *gin.Context) {
+		handlers.WebsocketHandler(ctx)
+	})
 
 	server.GET("/", func(ctx *gin.Context) {
 		ctx.File("../web/index.html")
 	})
-	fmt.Println("Servidor rodando em http://localhost:8080")
-	server.Run(":8080")
+
+	fmt.Println("Servidor rodando em http://localhost:8000")
+	server.Run(":8000")
 }

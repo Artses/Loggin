@@ -2,29 +2,58 @@ package handlers
 
 import (
 	"fmt"
+	"loggin/internal/services"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(ctx *http.Request) bool {
+		return true
+	},
+}
 
-func SSEHandler(ctx *gin.Context){
-	ctx.Header("Content-Type", "text/event-stream")
-	ctx.Header("Cache-Control", "no-cache")
-	ctx.Header("Connection", "keep-alive")
-	ctx.Header("Pragma", "no-cache")
+func WebsocketHandler(ctx *gin.Context){
+	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 
-	flusher, ok := ctx.Writer.(http.Flusher)
-
-	if !ok {
-		ctx.String(http.StatusInternalServerError, "Streaming não suportado")
-		return
+	if err != nil {
+		fmt.Printf("Erro ao fazer upgrade para websocket: %v\n", err)
+		return 
 	}
-	
-	for i:= 0; i < 100; i++{
-		fmt.Fprintf(ctx.Writer, "data: %d\n\n", i)
-		time.Sleep(10 * time.Second)
-		flusher.Flush()
+	defer conn.Close()
+
+	for{
+		mt,message,err := conn.ReadMessage()
+
+		if err != nil{
+			fmt.Printf("Erro ao ler mensagem: %v\n", err)
+			break
+		}
+
+		path := (string(message))
+
+		logs, err := services.GetLog(path)
+
+		if err != nil {
+			fmt.Printf("Erro ao abrir o arquivo de log: %v\n", err)
+			break
+		}
+
+		for line := range logs.Lines {
+			if line == nil {
+				continue
+			}
+			err = conn.WriteMessage(mt, []byte(fmt.Sprintf("Linha: %v\n", line.Text)))
+			if err != nil {
+				fmt.Printf("Erro ao escrever mensagem: %v\n", err)
+				break
+			}
+		}
+		
+		if err != nil{
+			fmt.Printf("Erro ao escrever mensagem: %v\n", err)
+		}
 	}
 }
