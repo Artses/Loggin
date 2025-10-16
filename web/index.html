@@ -19,7 +19,7 @@
 </head>
 
 <body>
-  <h2>📜 Logs em tempo real (SSE)</h2>
+  <h2>📜 Logs em tempo real</h2>
   <label for="path">path logs</label>
   <input id="path" placeholder="Digite o caminho do log" />
   <button onclick="sendMessage()">Enviar</button>
@@ -30,7 +30,7 @@
 
     socket.onmessage = function(event) {
       const li = document.createElement("li");
-      li.textContent = "Servidor: " + event.data;
+      li.textContent = event.data;
       logsUl.insertBefore(li, logsUl.firstChild);
     };
 
@@ -39,7 +39,6 @@
       const msg = input.value;
       socket.send(msg); 
       const li = document.createElement("li");
-      li.textContent = "Você: " + msg;
       logsUl.insertBefore(li, logsUl.firstChild);
       input.value = "";
     }

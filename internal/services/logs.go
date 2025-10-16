@@ -11,3 +11,5 @@ func GetLog(path string) (*tail.Tail, error) {
     }
     return log, nil
 }
+
+//func PrintaLog(*tail.Tail) return str *Fazer com que o log seja salvo 1 por um de foma modular e montar ele apenas quando for enviar pro front

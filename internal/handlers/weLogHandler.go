@@ -41,11 +41,15 @@ func WebsocketHandler(ctx *gin.Context){
 			break
 		}
 
+// tirar isso daq e deixar o logs.go resposavel por montar a mensagem e apenas enviar uma string para cá com a mensagem construida
+
+		var lineCount = 0
 		for line := range logs.Lines {
 			if line == nil {
 				continue
 			}
-			err = conn.WriteMessage(mt, []byte(fmt.Sprintf("Linha: %v\n", line.Text)))
+			lineCount++
+			err = conn.WriteMessage(mt, []byte(fmt.Sprintf("Linha: %v Texto: %v\n", lineCount,line.Text)))
 			if err != nil {
 				fmt.Printf("Erro ao escrever mensagem: %v\n", err)
 				break
