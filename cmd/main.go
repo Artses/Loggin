@@ -1,18 +1,29 @@
 package main
 
-import(
+import (
+	"fmt"
+	"loggin/internal/handlers"
 	"github.com/gin-gonic/gin"
 )
 
-func main (){
+func main() {
 
 	server := gin.Default()
 
-	server.GET("/ping", func(ctx *gin.Context){
+	server.GET("/healthstatus", func(ctx *gin.Context){
 		ctx.JSON(200, gin.H{
-			"message": "pong",
+			"message": "i'm alive ;D",
 		})
 	})
 
+	server.GET("/wslogs", func(ctx *gin.Context) {
+		handlers.WebsocketHandler(ctx)
+	})
+
+	server.GET("/", func(ctx *gin.Context) {
+		ctx.File("../web/index.html")
+	})
+
+	fmt.Println("Servidor rodando em http://localhost:8000")
 	server.Run(":8000")
 }
