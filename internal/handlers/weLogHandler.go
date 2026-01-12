@@ -25,31 +25,27 @@ func WebsocketHandler(ctx *gin.Context){
 	defer conn.Close()
 
 	for{
-		mt,message,err := conn.ReadMessage()
+		mt,_,err := conn.ReadMessage()
 
 		if err != nil{
 			fmt.Printf("Erro ao ler mensagem: %v\n", err)
 			break
 		}
 
-		path := (string(message))
-
-		logs, err := services.GetLog(path)
+		logs, err := services.GetLog()
 
 		if err != nil {
 			fmt.Printf("Erro ao abrir o arquivo de log: %v\n", err)
 			break
 		}
 
-// tirar isso daq e deixar o logs.go resposavel por montar a mensagem e apenas enviar uma string para cá com a mensagem construida
-
-		var lineCount = 0
 		for line := range logs.Lines {
 			if line == nil {
 				continue
 			}
-			lineCount++
-			err = conn.WriteMessage(mt, []byte(fmt.Sprintf("Linha: %v Texto: %v\n", lineCount,line.Text)))
+			
+			err = conn.WriteMessage(mt, []byte(fmt.Sprintf("Linha: %v Texto: %v\n", line.Num,line.Text)))
+
 			if err != nil {
 				fmt.Printf("Erro ao escrever mensagem: %v\n", err)
 				break

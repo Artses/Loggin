@@ -1,10 +1,12 @@
 package services
 
-import(
+import (
+	"loggin/internal/database"
 	"github.com/nxadm/tail"
 )
 
-func GetLog(path string) (*tail.Tail, error) {
+func GetLog() (*tail.Tail, error) {
+    path := GetLogPath()
     log, err := tail.TailFile(path, tail.Config{Follow: true})
     if err != nil {
         return nil, err
@@ -12,4 +14,19 @@ func GetLog(path string) (*tail.Tail, error) {
     return log, nil
 }
 
-//func PrintaLog(*tail.Tail) return str *Fazer com que o log seja salvo 1 por um de foma modular e montar ele apenas quando for enviar pro front
+func GetLogPath()string{
+    db, err := database.ConnectDatabase()
+
+    if err != nil {
+        panic(err)
+    }
+
+    defer db.Close()
+
+    row := db.QueryRow("select path from log limit 1")
+
+    var name string
+    row.Scan(&name)
+
+    return name
+}
