@@ -7,6 +7,7 @@ import (
 
 func GetLog() (*tail.Tail, error) {
     path := GetLogPath()
+    // tem que pegar a lista de path e abrir todos futuramente
     log, err := tail.TailFile(path, tail.Config{Follow: true})
     if err != nil {
         return nil, err
@@ -14,7 +15,7 @@ func GetLog() (*tail.Tail, error) {
     return log, nil
 }
 
-func GetLogPath()string{
+func GetLogPath() string {
     db, err := database.ConnectDatabase()
 
     if err != nil {
@@ -29,4 +30,20 @@ func GetLogPath()string{
     row.Scan(&name)
 
     return name
+
+    //fazer com que isto pegue todos os paths futuramente e retorne uma lista
+}
+
+func AddLogPath(path string) error {
+    db, err := database.ConnectDatabase()
+
+    if err != nil{
+        panic(err)
+    }
+
+    defer db.Close()
+
+    db.QueryRow("insert into log (path) values (?)", path)
+
+    return nil
 }
