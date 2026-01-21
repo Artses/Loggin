@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"loggin/internal/database"
 	"loggin/internal/handlers"
 	"loggin/internal/services"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	database.ConnectDatabase()
 	server := gin.Default()
 
-	server.GET("/api/v1/healthstatus", func(ctx *gin.Context){
+	server.GET("/api/v1/healthstatus", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"message": "i'm alive ;D",
 		})
@@ -23,8 +23,16 @@ func main() {
 	})
 
 	server.GET("/api/v1/path", func(ctx *gin.Context) {
+		paths, err := services.GetPaths()
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
 		ctx.JSON(200, gin.H{
-			"path": services.GetLogPath(),
+			"paths": paths,
 		})
 	})
 

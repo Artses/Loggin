@@ -15,24 +15,26 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func WebsocketHandler(ctx *gin.Context){
+func WebsocketHandler(ctx *gin.Context) {
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 
 	if err != nil {
 		fmt.Printf("Erro ao fazer upgrade para websocket: %v\n", err)
-		return 
+		return
 	}
 	defer conn.Close()
 
-	for{
-		mt,_,err := conn.ReadMessage()
+	for {
+		mt, _, err := conn.ReadMessage()
 
-		if err != nil{
+		if err != nil {
 			fmt.Printf("Erro ao ler mensagem: %v\n", err)
 			break
 		}
 
-		logs, err := services.GetLog()
+		string := "sdadsad"
+
+		logs, err := services.GetLog(string)
 
 		if err != nil {
 			fmt.Printf("Erro ao abrir o arquivo de log: %v\n", err)
@@ -43,16 +45,16 @@ func WebsocketHandler(ctx *gin.Context){
 			if line == nil {
 				continue
 			}
-			
-			err = conn.WriteMessage(mt, []byte(fmt.Sprintf("Linha: %v Texto: %v\n", line.Num,line.Text)))
+
+			err = conn.WriteMessage(mt, []byte(fmt.Sprintf("Linha: %v Texto: %v\n", line.Num, line.Text)))
 
 			if err != nil {
 				fmt.Printf("Erro ao escrever mensagem: %v\n", err)
 				break
 			}
 		}
-		
-		if err != nil{
+
+		if err != nil {
 			fmt.Printf("Erro ao escrever mensagem: %v\n", err)
 		}
 	}
