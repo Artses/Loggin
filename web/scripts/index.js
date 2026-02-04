@@ -1,22 +1,26 @@
 const socket = new WebSocket("ws://localhost:8000/api/v1/wslogs");
 const pathUrl = "http://localhost:8000/api/v1/path"
-const logDiv = document.createElement("div");
 const ul = document.createElement("ul");
-
+var count = 0
 socket.onopen = async () => {
-    var path = fetchLogPath()
-    socket.send(path);
+    const res = await fetchLogPath();
+
+    res.paths.forEach(element => {
+        socket.send(element.Path);
+        console.log(element.Path)
+    });
 };
 
 async function fetchLogPath() { 
     try {
         const response = await fetch(pathUrl);
+
         if (!response.ok) {
-            throw new Error(`Erro: ${data.message}`);
+            throw new Error(`Erro: ${response.status}`);
         }
-        console.log("Resposta recebida do servidor:", response);
+
         const data = await response.json();
-        return data.path;
+        return data
 
     } catch (error) {
         console.error("Erro ao buscar o caminho do log:", error);
@@ -26,9 +30,11 @@ async function fetchLogPath() {
 socket.onmessage = function (event) {
     const li = document.createElement("li");
     li.textContent = event.data; 
-    appendLogMessage(li);    
     ul.appendChild(li);
 };
 
-logDiv.appendChild(ul);
-document.body.appendChild(logDiv);
+for (let i = 0; i < count; i++ ){
+    const logDiv = document.createElement("div");
+    logDiv.appendChild(ul);
+    document.body.appendChild(logDiv);
+}

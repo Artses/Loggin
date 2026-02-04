@@ -8,7 +8,7 @@ import (
 )
 
 func GetLog(path string) (*tail.Tail, error) {
-	// tem que pegar a lista de path e abrir todos futuramente
+	
 	log, err := tail.TailFile(path, tail.Config{Follow: true})
 	if err != nil {
 		return nil, err
