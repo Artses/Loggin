@@ -1,19 +1,45 @@
 package services
 
 import (
+	"bufio"
+	"fmt"
+	"io"
 	"loggin/internal/database"
 	"loggin/internal/models"
-
-	"github.com/nxadm/tail"
+	"os"
+	"time"
 )
 
-func GetLog(path string) (*tail.Tail, error) {
-	
-	log, err := tail.TailFile(path, tail.Config{Follow: true})
+func GetLog(path string) ([]byte, error) {
+	file, err := os.Open(path)
+
 	if err != nil {
 		return nil, err
 	}
-	return log, nil
+
+	defer file.Close()
+
+	reader := bufio.NewReader(file)
+	lineNum := 1
+
+	for {
+		var log []byte
+		lineBytes, err := reader.ReadBytes('\n')
+
+		if len(lineBytes) > 0 {
+			prefix := []byte(fmt.Sprintf("Linha %d:", lineNum))
+
+			log = append(prefix, lineBytes...)
+		}
+
+		lineNum++
+
+		if err == io.EOF {
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+		return log, nil
+	}
 }
 
 func GetPaths() ([]models.Path, error) {

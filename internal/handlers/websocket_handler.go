@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"loggin/internal/services"
 	"net/http"
 
@@ -26,28 +25,27 @@ func WebsocketHandler(ctx *gin.Context) {
 	defer conn.Close()
 
 	for {
-		mt, msg, err := conn.ReadMessage()
+		_, msg, err := conn.ReadMessage()
 
 		if err != nil {
 			fmt.Printf("Erro ao ler mensagem: %v\n", err)
 			break
 		}
 
-		mensagem := string(msg)
-		log.Print(mensagem)		
-		logs, err := services.GetLog(mensagem)
+		path := string(msg)
+		logs, err := services.GetLog(path)
 
 		if err != nil {
 			fmt.Printf("Erro ao abrir o arquivo de log: %v\n", err)
 			break
 		}
 
-		for line := range logs.Lines {
+		for line := range len(logs) {
 			if line == nil {
 				continue
 			}
 
-			err = conn.WriteMessage(mt, []byte(fmt.Sprintf("Linha: %v Texto: %v\n", line.Num, line.Text)))
+			err = conn.WriteMessage(websocket.BinaryMessage, []byte(fmt.Sprintf("Linha: %v Texto: %v\n", line.Num, line.Text)))
 
 			if err != nil {
 				fmt.Printf("Erro ao escrever mensagem: %v\n", err)
