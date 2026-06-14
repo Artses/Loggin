@@ -15,25 +15,24 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func WebsocketHandler(ctx *gin.Context){
+func WebsocketHandler(ctx *gin.Context) {
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 
 	if err != nil {
 		fmt.Printf("Erro ao fazer upgrade para websocket: %v\n", err)
-		return 
+		return
 	}
 	defer conn.Close()
 
-	for{
-		mt,message,err := conn.ReadMessage()
+	for {
+		_, msg, err := conn.ReadMessage()
 
-		if err != nil{
+		if err != nil {
 			fmt.Printf("Erro ao ler mensagem: %v\n", err)
 			break
 		}
 
-		path := (string(message))
-
+		path := string(msg)
 		logs, err := services.GetLog(path)
 
 		if err != nil {
@@ -41,23 +40,21 @@ func WebsocketHandler(ctx *gin.Context){
 			break
 		}
 
-// tirar isso daq e deixar o logs.go resposavel por montar a mensagem e apenas enviar uma string para cá com a mensagem construida
-
-		var lineCount = 0
-		for line := range logs.Lines {
+		for line := range len(logs) {
 			if line == nil {
 				continue
 			}
-			lineCount++
-			err = conn.WriteMessage(mt, []byte(fmt.Sprintf("Linha: %v Texto: %v\n", lineCount,line.Text)))
+
+			err = conn.WriteMessage(websocket.BinaryMessage, []byte(fmt.Sprintf("Linha: %v Texto: %v\n", line.Num, line.Text)))
+
 			if err != nil {
 				fmt.Printf("Erro ao escrever mensagem: %v\n", err)
 				break
 			}
 		}
-		
-		if err != nil{
-			fmt.Printf("Erro ao escrever mensagem: %v\n", err)
-		}
+	}
+
+	if err != nil {
+		fmt.Printf("Erro ao escrever mensagem: %v\n", err)
 	}
 }

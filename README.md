@@ -22,3 +22,4 @@ Seu objetivo é simples: transformar informações brutas em **insights claros e
 |--------|-------------|------------|
 | Backend | **Go** | API principal para ingestão e consulta de logs. |
 | Frontend | **HTML, CSS, JS** | Interface web simples e funcional. |
+ 

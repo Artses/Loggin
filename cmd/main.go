@@ -2,27 +2,45 @@ package main
 
 import (
 	"fmt"
-	"loggin/internal/handlers"
 	"github.com/gin-gonic/gin"
+	"loggin/internal/database"
+	"loggin/internal/handlers"
+	"loggin/internal/services"
 )
 
 func main() {
-
+	database.ConnectDatabase()
 	server := gin.Default()
 
-	server.GET("/healthstatus", func(ctx *gin.Context){
+	server.GET("/api/v1/healthstatus", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"message": "i'm alive ;D",
 		})
 	})
 
-	server.GET("/wslogs", func(ctx *gin.Context) {
+	server.GET("/api/v1/wslogs", func(ctx *gin.Context) {
 		handlers.WebsocketHandler(ctx)
 	})
 
-	server.GET("/", func(ctx *gin.Context) {
-		ctx.File("../web/index.html")
+	server.GET("/api/v1/path", func(ctx *gin.Context) {
+		paths, err := services.GetPaths()
+		if err != nil {
+			ctx.JSON(500, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"paths": paths,
+		})
 	})
+
+	server.GET("/", func(ctx *gin.Context) {
+		ctx.File("../web/views/index.html")
+	})
+
+	server.Static("/static", "../web")
 
 	fmt.Println("Servidor rodando em http://localhost:8000")
 	server.Run(":8000")
