@@ -34,13 +34,12 @@ func WebsocketHandler(ctx *gin.Context) {
 
 		path := string(msg)
 		logs, err := services.GetLog(path)
-
 		if err != nil {
 			fmt.Printf("Erro ao abrir o arquivo de log: %v\n", err)
 			break
 		}
 
-		for line := range len(logs) {
+		for line := range logs.Lines {
 			if line == nil {
 				continue
 			}

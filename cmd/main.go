@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"loggin/internal/database"
 	"loggin/internal/handlers"
-	"loggin/internal/services"
 )
 
 func main() {
@@ -18,29 +17,9 @@ func main() {
 		})
 	})
 
-	server.GET("/api/v1/wslogs", func(ctx *gin.Context) {
+	server.GET("/api/v1/logs", func(ctx *gin.Context) {
 		handlers.WebsocketHandler(ctx)
 	})
-
-	server.GET("/api/v1/path", func(ctx *gin.Context) {
-		paths, err := services.GetPaths()
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		ctx.JSON(200, gin.H{
-			"paths": paths,
-		})
-	})
-
-	server.GET("/", func(ctx *gin.Context) {
-		ctx.File("../web/views/index.html")
-	})
-
-	server.Static("/static", "../web")
 
 	fmt.Println("Servidor rodando em http://localhost:8000")
 	server.Run(":8000")
