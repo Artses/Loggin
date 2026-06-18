@@ -19,6 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Dependence Injection
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthServices>();
+builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
 
 // JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

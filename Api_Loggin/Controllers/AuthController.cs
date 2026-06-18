@@ -36,9 +36,9 @@ namespace Api_Loggin.Controllers
         }
 
         [HttpGet("hi")]
-        [Authorize(Roles = "Penis")]
+        [Authorize(Roles = "User")]
         public IActionResult Hi() {
-            return Ok(new { message = "Hello" });
+            return Ok(new { message = "Hello this route is only for testing purpose" });
         }
     }
 }

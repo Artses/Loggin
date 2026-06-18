@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"loggin/internal/services"
 	"net/http"
-
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -32,8 +32,15 @@ func WebsocketHandler(ctx *gin.Context) {
 			break
 		}
 
-		path := string(msg)
-		logs, err := services.GetLog(path)
+		req := string(msg)
+		var reqMap map[string]string
+
+		if err := json.Unmarshal([]byte(req), &reqMap); err != nil {
+			fmt.Printf("Json nao valido: %v", err)
+			break
+		}
+
+		logs, err := services.GetLog(reqMap["path"])
 		if err != nil {
 			fmt.Printf("Erro ao abrir o arquivo de log: %v\n", err)
 			break
@@ -51,9 +58,5 @@ func WebsocketHandler(ctx *gin.Context) {
 				break
 			}
 		}
-	}
-
-	if err != nil {
-		fmt.Printf("Erro ao escrever mensagem: %v\n", err)
 	}
 }
