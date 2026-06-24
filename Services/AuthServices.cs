@@ -1,6 +1,7 @@
 ﻿using Api_Loggin.Data;
 using Api_Loggin.DTOs;
 using Api_Loggin.Models;
+using Api_Loggin.Repositories.Interfaces;
 using Api_Loggin.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,11 +11,20 @@ using System.Text;
 
 namespace Api_Loggin.Services
 {
-    public class AuthServices(AppDbContext db, IConfiguration config) : IAuthService
+    public class AuthServices : IAuthService
     {
-        public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
+
+        private readonly IAuthRepository _repo;
+        private readonly IConfiguration _config;
+
+        public AuthServices(IAuthRepository repo, IConfiguration config)
         {
-            if (await db.Users.AnyAsync(u => u.Email == dto.Email))
+            _repo = repo;
+            _config = config;
+        }
+        public async Task<AuthUserResponseDto> RegisterUserAsync(RegisterUserDto dto)
+        {
+            if (await _repo.GetUserByEmailAsync(dto.Email) != null)
                 return null;
 
             var user = new User
@@ -24,25 +34,24 @@ namespace Api_Loggin.Services
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             };
 
-            db.Users.Add(user);
-            await db.SaveChangesAsync();
+            await _repo.AddUserAsync(user);
 
-            return new AuthResponseDto(GenerateToken(user), user.Name, user.Email, user.Role);
+            return new AuthUserResponseDto(GenerateToken(user), user.Name, user.Email, user.Role);
         }
 
-        public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
+        public async Task<AuthUserResponseDto> LoginUserAsync(LoginUserDto dto)
         {
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            var user = await _repo.GetUserByEmailAsync(dto.Email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return null;
 
-            return new AuthResponseDto(GenerateToken(user), user.Name, user.Email, user.Role);
+            return new AuthUserResponseDto(GenerateToken(user), user.Name, user.Email, user.Role);
         }
 
         public string GenerateToken(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -54,10 +63,10 @@ namespace Api_Loggin.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: config["Jwt:Issuer"],
-                audience: config["Jwt:Audience"],
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(config["Jwt:ExpiresInMinutes"]!)),
+                expires: DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:ExpiresInMinutes"]!)),
                 signingCredentials: creds
             );
 

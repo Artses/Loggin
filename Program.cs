@@ -1,5 +1,7 @@
 using Api_Loggin.Data;
 using Api_Loggin.Models;
+using Api_Loggin.Repositories;
+using Api_Loggin.Repositories.Interfaces;
 using Api_Loggin.Services;
 using Api_Loggin.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,10 +18,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// Dependence Injection
+// Dependency Injection
 builder.Services.AddControllers();
+
 builder.Services.AddScoped<IAuthService, AuthServices>();
-builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
+builder.Services.AddScoped<ICollectorService, CollectorService>();
+
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<ICollectorRepository, CollectorRepository>();
 
 // JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -38,9 +44,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 builder.Services.AddAuthorization();
-
-// Add services to the container.
-builder.Services.AddControllers();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
