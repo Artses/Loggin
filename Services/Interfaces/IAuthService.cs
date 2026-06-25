@@ -4,7 +4,7 @@ namespace Api_Loggin.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
-        Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
+        Task<AuthUserResponseDto> RegisterUserAsync(RegisterUserDto registerDto);
+        Task<AuthUserResponseDto> LoginUserAsync(LoginUserDto loginDto);
     }
 }

@@ -9,13 +9,18 @@ namespace Api_Loggin.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(IAuthService authService) : ControllerBase
+    public class AuthController : ControllerBase
     {
+        private readonly IAuthService _service;
+        public AuthController(IAuthService service)
+        {
+            _service = service;
+        }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
         {
-            var result = await authService.RegisterAsync(dto);
+            var result = await _service.RegisterUserAsync(dto);
             if (result is null)
             {
                 return Conflict(new { message = "Invalid Credentials" });
@@ -24,9 +29,9 @@ namespace Api_Loggin.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
         {
-            var result = await authService.LoginAsync(dto);
+            var result = await _service.LoginUserAsync(dto);
 
             if (result is null)
             {

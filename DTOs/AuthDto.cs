@@ -1,6 +1,6 @@
 ﻿namespace Api_Loggin.DTOs
 {
-public record RegisterDto(string Name, string Email, string Password);
-public record LoginDto(string Email, string Password);
-public record AuthResponseDto(string Token, string Name, string Email, string Role);
+public record RegisterUserDto(string Name, string Email, string Password);
+public record LoginUserDto(string Email, string Password);
+public record AuthUserResponseDto(string Token, string Name, string Email, string Role);
 }
