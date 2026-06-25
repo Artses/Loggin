@@ -57,7 +57,7 @@ namespace Api_Loggin.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateCollector([FromBody] Collector dto)
+        public async Task<IActionResult> UpdateCollector([FromBody] UpdateCollectorDto dto)
         {
             var collector = new Collector
             {
