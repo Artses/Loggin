@@ -1,61 +1,61 @@
-# API Loggin - Orquestrador de Observabilidade e Auditoria
+# Loggin API - Observability and Audit Orchestrator
 
 > [!IMPORTANT]
-> Este repositório contém a **API principal desenvolvida em C#**. 
-> Para acessar o coletor de logs desenvolvido como biblioteca em **Go**, acesse:
+> This repository contains the **main API developed in C#**.
+> To access the log collector library developed in **Go**, please visit:
 > 👉 **[Loggin Collector (Go)](https://github.com/Artses/Loggin_Collector)**
 
 ---
 
-## 📌 Sobre o Projeto
+## 📌 About the Project
 
-Este projeto faz parte de uma **solução de observabilidade de ponta a ponta** desenvolvida para auditoria, contextualização e gerenciamento centralizado de logs em aplicações distribuídas. A solução completa divide-se em duas partes principais:
+This project is part of an **end-to-end observability solution** designed for auditing, contextualizing, and centrally managing logs in distributed applications. The complete solution is split into two primary components:
 
-1. **Coletor e Contextualizador (Biblioteca em Go)**: Integrado diretamente nas aplicações distribuídas por meio do framework Gin. Ele atua em tempo de execução coletando logs e injetando contexto relevante a cada evento.
-2. **API Orquestradora (API em C# - Este Repositório)**: Desenvolvida em **ASP.NET Core**, é o cérebro da solução. Ela é responsável por orquestrar todo o processo de coleta, gerenciar os agentes coletores, persistir dados estruturados e definir o ciclo de vida dos dados de logs (incluindo tratamento, interpretação e disposição).
-
----
-
-## 🚀 Funcionalidades da API C#
-
-- **Gerenciamento de Coletores (CRUD)**: Cadastro e administração dos coletores de logs ativos (`Url`, `Path`, `Name`).
-- **Autenticação & Autorização**: Proteção de endpoints utilizando **JWT (JSON Web Tokens)** e criptografia segura de senhas via **BCrypt**.
-- **Migrações Automáticas**: Atualização e criação automática do esquema do banco de dados PostgreSQL na inicialização da aplicação (sem necessidade de aplicar migrações manuais em desenvolvimento).
-- **Documentação Interativa**: Swagger UI pré-configurado e protegido com autenticação Bearer para testes fáceis dos endpoints diretamente pelo navegador.
+1. **Collector and Contextualizer (Go Library)**: Integrated directly into applications via the Gin framework, responsible for collecting and contextualizing logs at runtime.
+2. **Orchestrator API (C# API - This Repository)**: Built with **ASP.NET Core**, this is the brain of the solution. It orchestrates the collection process, manages collector agent configurations, persists structured log data, and defines the remaining lifecycle of the log data (processing, interpretation, storage, and disposition).
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🚀 Features of the C# API
 
-- **Linguagem / Framework**: C# .NET 8.0 / ASP.NET Core
-- **Banco de Dados**: PostgreSQL (via `Npgsql.EntityFrameworkCore.PostgreSQL`)
-- **ORM / Persistência**: Entity Framework Core (EF Core)
-- **Segurança**: JWT Bearer Authentication & BCrypt.Net-Next
-- **Documentação**: Swagger / OpenAPI (via Swashbuckle)
-
----
-
-## 🗂️ Estrutura do Projeto
-
-A API C# está organizada seguindo práticas recomendadas de separação de responsabilidades e injeção de dependências:
-
-- **[Controllers](file:///e:/Loggin/Api_Loggin/Controllers)**: Exposição dos endpoints HTTP (`AuthController`, `CollectorController`).
-- **[Services](file:///e:/Loggin/Api_Loggin/Services)**: Lógica de negócios da aplicação (`AuthServices`, `CollectorService`).
-- **[Repositories](file:///e:/Loggin/Api_Loggin/Repositories)**: Abstração de acesso ao banco de dados PostgreSQL (`AuthRepository`, `CollectorRepository`).
-- **[Models](file:///e:/Loggin/Api_Loggin/Models)**: Definição das entidades do banco de dados (`User`, `Collector`).
-- **[DTOs](file:///e:/Loggin/Api_Loggin/DTOs)**: Objetos de transferência de dados para requisições e respostas.
-- **[Data](file:///e:/Loggin/Api_Loggin/Data)**: Contexto de banco de dados do Entity Framework (`AppDbContext`).
+- **Collector Management (CRUD)**: Registry and management of active log collectors (`Url`, `Path`, `Name`).
+- **Authentication & Authorization**: Endpoint protection using **JWT (JSON Web Tokens)** and secure password hashing using **BCrypt**.
+- **Automatic Migrations**: Database schema updates applied automatically to the PostgreSQL database on startup (no need for manual migration commands in development).
+- **Interactive Documentation**: Pre-configured Swagger UI with Bearer Token authentication support for easy API testing directly from your browser.
 
 ---
 
-## 🔑 Configuração e Execução
+## 🛠️ Tech Stack
 
-### Pré-requisitos
-- **.NET 8.0 SDK** instalado.
-- Servidor **PostgreSQL** em execução.
+- **Language / Framework**: C# .NET 8.0 / ASP.NET Core
+- **Database**: PostgreSQL (via `Npgsql.EntityFrameworkCore.PostgreSQL`)
+- **ORM / Persistence**: Entity Framework Core (EF Core)
+- **Security**: JWT Bearer Authentication & BCrypt.Net-Next
+- **Documentation**: Swagger / OpenAPI (via Swashbuckle)
 
-### 1. Configurar Conexões e Segredos
-Ajuste as credenciais de banco de dados (`ConnectionStrings`) e a chave secreta do JWT no arquivo [appsettings.json](file:///e:/Loggin/Api_Loggin/appsettings.json) ou configure variáveis de ambiente correspondentes:
+---
+
+## 🗂️ Project Structure
+
+The C# API is organized according to clean architecture principles and dependency injection:
+
+- **[Controllers](file:///e:/Loggin/Api_Loggin/Controllers)**: Exposes the HTTP REST endpoints (`AuthController`, `CollectorController`).
+- **[Services](file:///e:/Loggin/Api_Loggin/Services)**: Contains the core business logic (`AuthServices`, `CollectorService`).
+- **[Repositories](file:///e:/Loggin/Api_Loggin/Repositories)**: Abstraction layer for PostgreSQL database operations (`AuthRepository`, `CollectorRepository`).
+- **[Models](file:///e:/Loggin/Api_Loggin/Models)**: Database entities (`User`, `Collector`).
+- **[DTOs](file:///e:/Loggin/Api_Loggin/DTOs)**: Data Transfer Objects used for validation of incoming and outgoing requests.
+- **[Data](file:///e:/Loggin/Api_Loggin/Data)**: Entity Framework DB Context configuration (`AppDbContext`).
+
+---
+
+## 🔑 Setup and Execution
+
+### Prerequisites
+- **.NET 8.0 SDK** installed.
+- Running **PostgreSQL** instance.
+
+### 1. Configure Connection Strings and Secrets
+Adjust the PostgreSQL connection string (`ConnectionStrings`) and JWT keys in [appsettings.json](file:///e:/Loggin/Api_Loggin/appsettings.json) or via environment variables:
 
 ```json
 {
@@ -63,7 +63,7 @@ Ajuste as credenciais de banco de dados (`ConnectionStrings`) e a chave secreta 
     "DefaultConnection": "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=password"
   },
   "Jwt": {
-    "Key": "sua-chave-secreta-jwt-de-pelo-menos-32-caracteres",
+    "Key": "your-at-least-32-character-secret-jwt-key",
     "Issuer": "ProductsApi",
     "Audience": "ProductsApiUsers",
     "ExpiresInMinutes": 60
@@ -71,31 +71,31 @@ Ajuste as credenciais de banco de dados (`ConnectionStrings`) e a chave secreta 
 }
 ```
 
-### 2. Rodar a Aplicação
-Execute o comando a seguir no terminal a partir do diretório raiz:
+### 2. Run the Application
+Run the following command from the project root directory:
 
 ```powershell
 dotnet run
 ```
 
-As migrações pendentes do banco de dados serão aplicadas automaticamente no momento da inicialização.
+Any pending database migrations will be automatically applied at startup.
 
-### 3. Acessar o Swagger
-Com a aplicação em execução no ambiente de desenvolvimento, acesse o painel interativo do Swagger pelo navegador:
-👉 `http://localhost:<porta>/swagger/index.html` (verifique a porta gerada no console).
+### 3. Access Swagger Documentation
+Once the app is running in your development environment, open your browser and navigate to:
+👉 `http://localhost:<port>/swagger/index.html` (check your console output for the generated port).
 
 ---
 
-## 📌 Endpoints Principais
+## 📌 Main Endpoints
 
-### Autenticação (`api/Auth`)
-- `POST /api/Auth/register` - Cadastro de novos usuários.
-- `POST /api/Auth/login` - Autenticação de usuário e retorno do token JWT.
-- `GET /api/Auth/hi` (Protegido por token) - Validação de token com permissão `User`.
+### Authentication (`api/Auth`)
+- `POST /api/Auth/register` - Create a new user.
+- `POST /api/Auth/login` - Authenticate a user and receive a JWT token.
+- `GET /api/Auth/hi` (Authorized) - Token verification test endpoint (requires the `User` role).
 
-### Gerenciamento de Coletores (`api/Collector` - Todos requerem Token JWT)
-- `POST /api/Collector` - Registra um novo coletor.
-- `GET /api/Collector` - Lista todos os coletores registrados.
-- `GET /api/Collector/{id}` - Obtém informações de um coletor específico.
-- `PUT /api/Collector/{id}` - Atualiza as configurações de um coletor.
-- `DELETE /api/Collector/{id}` - Remove um coletor do monitoramento.
+### Collector Management (`api/Collector` - All require JWT Token)
+- `POST /api/Collector` - Register a new collector.
+- `GET /api/Collector` - Retrieve all registered collectors.
+- `GET /api/Collector/{id}` - Retrieve details of a specific collector.
+- `PUT /api/Collector/{id}` - Update a collector's configuration.
+- `DELETE /api/Collector/{id}` - Remove a collector from monitoring.
