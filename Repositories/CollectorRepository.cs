@@ -38,7 +38,7 @@ namespace Api_Loggin.Repositories
             {
                 existingCollector.Name = collector.Name;
                 existingCollector.Url = collector.Url;
-                existingCollector.Path = collector.Path;
+                existingCollector.Logs = collector.Logs;
 
                 await _context.SaveChangesAsync();
 

@@ -25,7 +25,7 @@ namespace Api_Loggin.Controllers
             {
                 Name = dto.Name,
                 Url = dto.Url,
-                Path = dto.Path
+                Logs = dto.Logs
             };
 
             var result = await _service.RegisterCollectorAsync(collector);
@@ -64,7 +64,7 @@ namespace Api_Loggin.Controllers
                 Id = dto.Id,
                 Name = dto.Name,
                 Url = dto.Url,
-                Path = dto.Path
+                Logs = dto.Logs
             };
 
             var result = await _service.UpdateCollectorAsync(collector);
