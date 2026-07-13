@@ -1,5 +1,4 @@
 using Api_Loggin.Data;
-using Api_Loggin.Models;
 using Api_Loggin.Repositories;
 using Api_Loggin.Repositories.Interfaces;
 using Api_Loggin.Services;
@@ -15,15 +14,24 @@ Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddEnvironmentVariables();
+
 // Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")?
+    .Replace("${DB_HOST}", builder.Configuration["DB_HOST"] ?? "localhost")
+    .Replace("${DB_PORT}", builder.Configuration["DB_PORT"] ?? "5432")
+    .Replace("${DB_NAME}", builder.Configuration["DB_NAME"] ?? "loggin")
+    .Replace("${DB_USER}", builder.Configuration["DB_USER"] ?? "postgres")
+    .Replace("${DB_PASSWORD}", builder.Configuration["DB_PASSWORD"] ?? "");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(connectionString);
 });
 
 // Dependency Injection
 builder.Services.AddControllers();
-
+ 
 builder.Services.AddScoped<IAuthService, AuthServices>();
 builder.Services.AddScoped<ICollectorService, CollectorService>();
 
@@ -43,7 +51,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                Encoding.UTF8.GetBytes(builder.Configuration["JWT"]!))
         };
     });
 builder.Services.AddAuthorization();
