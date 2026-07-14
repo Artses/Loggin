@@ -30,13 +30,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 // Dependency Injection
+builder.Services.AddHttpClient();
 builder.Services.AddControllers();
  
 builder.Services.AddScoped<IAuthService, AuthServices>();
 builder.Services.AddScoped<ICollectorService, CollectorService>();
+builder.Services.AddScoped<ILogService, LogService>();
 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ICollectorRepository, CollectorRepository>();
+builder.Services.AddScoped<ILogRepository, LogRepository>();
 
 // JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -51,7 +54,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JWT"]!))
+                Encoding.UTF8.GetBytes(builder.Configuration["JWT_KEY"]!))
         };
     });
 builder.Services.AddAuthorization();
@@ -89,7 +92,6 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Config HTTP request pipeline.
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

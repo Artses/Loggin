@@ -1,4 +1,5 @@
-﻿using Api_Loggin.Models;
+using Api_Loggin.DTOs;
+using Api_Loggin.Models;
 using System.Security.Principal;
 
 namespace Api_Loggin.Repositories.Interfaces
@@ -7,8 +8,8 @@ namespace Api_Loggin.Repositories.Interfaces
     {
         Task<List<Collector>> GetAllAsync();
         Task<Collector?> GetByIdAsync(Guid id);
-        Task<bool> AddAsync(Collector collector);
-        Task<Collector> UpdateAsync(Collector collector);
+        Task<Collector?> AddAsync(RegisterCollectorDto dto);
+        Task<Collector?> UpdateAsync(UpdateCollectorDto dto);
         Task<bool> DeleteAsync(Guid id);
     }
 }

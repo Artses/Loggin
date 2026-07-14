@@ -4,4 +4,4 @@ DB_NAME=loggin
 DB_USER=postgres
 DB_PASSWORD=password
 
-JWT=your_secret #The key has to be bigger then 128 bits
+JWT_KEY=your_secret #The key has to be bigger then 128 bits

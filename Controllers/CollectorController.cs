@@ -1,4 +1,4 @@
-﻿using Api_Loggin.DTOs;
+using Api_Loggin.DTOs;
 using Api_Loggin.Models;
 using Api_Loggin.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -21,20 +21,14 @@ namespace Api_Loggin.Controllers
         [HttpPost]
         public async Task<IActionResult> AddCollector([FromBody] RegisterCollectorDto dto)
         {
-            var collector = new Collector
-            {
-                Name = dto.Name,
-                Url = dto.Url,
-                Logs = dto.Logs
-            };
 
-            var result = await _service.RegisterCollectorAsync(collector);
-            if (!result)
+            var result = await _service.RegisterCollectorAsync(dto);
+            if (result is null)
             {
                 return BadRequest(new { message = "Failed to register collector" });
             }
 
-            return CreatedAtAction(nameof(GetCollectorById), new { id = collector.Id }, collector);
+            return CreatedAtAction(nameof(GetCollectorById), new { id = result.Id }, result);
         }
 
         [HttpGet]
@@ -59,15 +53,9 @@ namespace Api_Loggin.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateCollector([FromBody] UpdateCollectorDto dto)
         {
-            var collector = new Collector
-            {
-                Id = dto.Id,
-                Name = dto.Name,
-                Url = dto.Url,
-                Logs = dto.Logs
-            };
+         
 
-            var result = await _service.UpdateCollectorAsync(collector);
+            var result = await _service.UpdateCollectorAsync(dto);
             if (result is null)
             {
                 return NotFound(new { message = "Collector not found" });

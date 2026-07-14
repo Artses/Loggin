@@ -1,4 +1,5 @@
-﻿using Api_Loggin.Data;
+using Api_Loggin.Data;
+using Api_Loggin.DTOs;
 using Api_Loggin.Models;
 using Api_Loggin.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -24,26 +25,28 @@ namespace Api_Loggin.Repositories
             return await _context.Collectors.FindAsync(id);
         }
 
-        public async Task<bool> AddAsync(Collector collector)
+        public async Task<Collector?> AddAsync(RegisterCollectorDto dto)
         {
+            var collector = new Collector();
+            collector.Url = dto.Url;
+            collector.Name = dto.Name;
+
             await _context.Collectors.AddAsync(collector);
             await _context.SaveChangesAsync();
-            return true;
+            return collector;
         }
 
-        public async Task<Collector> UpdateAsync(Collector collector)
+        public async Task<Collector?> UpdateAsync(UpdateCollectorDto dto)
         {
-            var existingCollector = await _context.Collectors.FindAsync(collector.Id);
-            if (existingCollector != null)
+            var collector = await _context.Collectors.FindAsync(dto.Id);
+            if (collector != null)
             {
-                existingCollector.Name = collector.Name;
-                existingCollector.Url = collector.Url;
-                existingCollector.Logs = collector.Logs;
+                collector.Name = dto.Name;
+                collector.Url = dto.Url;
 
                 await _context.SaveChangesAsync();
-
             }
-            return existingCollector;
+            return collector;
         }
 
         public async Task<bool> DeleteAsync(Guid id)

@@ -1,4 +1,4 @@
-﻿using Api_Loggin.Models;
+using Api_Loggin.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api_Loggin.Data
@@ -7,9 +7,12 @@ namespace Api_Loggin.Data
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Collector> Collectors { get; set; }
+        public DbSet<Log> Logs { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Log>().ToTable("Log");
+
             modelBuilder.Entity<User>(e =>
             {
                 e.HasIndex(u => u.Email).IsUnique();
