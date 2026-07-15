@@ -18,7 +18,7 @@ namespace Api_Loggin.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] RegisterLogDto dto)
+        public async Task<IActionResult> AddLog([FromBody] RegisterLogDto dto)
         {
 
             var result = await _service.RegisterLogAsync(dto);
@@ -66,13 +66,24 @@ namespace Api_Loggin.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteLog([FromBody] DeleteLogDto dto)
         {
-            var result = await _service.DeleteLogAsync(dto.id);
+            var result = await _service.DeleteLogAsync(dto.Id);
             if (!result)
             {
                 return NotFound(new { message = "Log not found" });
             }
 
             return NoContent();
+        }
+
+        [HttpPost("GetLogs")]
+        public async Task<IActionResult> FetchLogs([FromBody] FetchLogDto dto)
+        {
+            var result = await _service.FetchLogAsync(dto);
+            if (result.Equals(""))
+            {
+                return NotFound(new { message = "Without log lines" });
+            }
+            return Ok(result);
         }
     }
 }

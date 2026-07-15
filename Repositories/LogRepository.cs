@@ -47,7 +47,8 @@ namespace Api_Loggin.Repositories
             if (log != null)
             {
                 var collectorExists = await _context.Collectors.AnyAsync(c => c.Id == dto.CollectorId);
-                if (!collectorExists) return null;
+                if (!collectorExists) 
+                    return null;
 
                 log.Path = dto.Path;
                 log.CollectorId = dto.CollectorId;
@@ -67,6 +68,13 @@ namespace Api_Loggin.Repositories
                 return true;
             }
             return false;
+        }
+
+        public async Task<Log?> FetchAsync(FetchLogDto dto)
+        {
+            return await _context.Logs
+            .Where(l => l.CollectorId == dto.CollectorId && l.Id == dto.Id)
+            .FirstOrDefaultAsync();
         }
     }
 }

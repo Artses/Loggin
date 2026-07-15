@@ -10,5 +10,6 @@ namespace Api_Loggin.Repositories.Interfaces
         Task<Log?> AddAsync(RegisterLogDto dto);
         Task<Log?> UpdateAsync(UpdateLogDto dto);
         Task<bool> DeleteAsync(Guid id);
+        Task<Log?> FetchAsync(FetchLogDto dto);
     }
 }

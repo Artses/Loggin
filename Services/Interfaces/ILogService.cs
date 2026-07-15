@@ -5,7 +5,7 @@ namespace Api_Loggin.Services.Interfaces
 {
     public interface ILogService
     {
-        Task<String> FetchLogAsync(GetLogDto dto);
+        Task<string> FetchLogAsync(FetchLogDto dto);
         Task<Log?> RegisterLogAsync(RegisterLogDto dto);
         Task<List<Log>> GetAllLogsAsync();
         Task<Log?> GetLogAsync(Guid id);

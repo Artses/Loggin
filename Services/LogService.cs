@@ -14,19 +14,19 @@ namespace Api_Loggin.Services
         public LogService(HttpClient httpClient, ILogRepository repo, ICollectorRepository collectorRepo)
         {
             _httpClient = httpClient;
-            _repo = repo;
             _collectorRepo = collectorRepo;
+            _repo = repo;
         }
 
-        public async Task<string> FetchLogAsync(GetLogDto dto)
+        public async Task<string> FetchLogAsync(FetchLogDto dto)
         {
-            var log = await _repo.GetByIdAsync(dto.LogId);
-            if (log == null || log.CollectorId != dto.CollectorId)
+            var log = await _repo.FetchAsync(dto);
+            if (log == null)
             {
                 return "Log not found or invalid collector association.";
             }
 
-            var collector = log.Collector ?? await _collectorRepo.GetByIdAsync(dto.CollectorId);
+            var collector = await _collectorRepo.GetByIdAsync(dto.CollectorId);
             if (collector == null)
             {
                 return "Associated collector not found.";
@@ -34,11 +34,15 @@ namespace Api_Loggin.Services
 
             try
             {
-                var baseUrl = collector.Url.TrimEnd('/');
-                var path = log.Path.StartsWith('/') ? log.Path : "/" + log.Path;
-                var fullUrl = $"{baseUrl}{path}";
+                var req = new RequestLogDto(log.Path); //Add line num
 
-                return await _httpClient.GetStringAsync(fullUrl);
+                var fullUrl = $"http://{collector.Url}/api/v1/logs";
+
+                var res = await _httpClient.PostAsJsonAsync(
+                fullUrl,
+                req);
+
+                return await res.Content.ReadAsStringAsync();
             }
             catch (Exception ex)
             {

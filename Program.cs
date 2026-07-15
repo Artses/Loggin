@@ -34,11 +34,12 @@ builder.Services.AddHttpClient();
 builder.Services.AddControllers();
  
 builder.Services.AddScoped<IAuthService, AuthServices>();
-builder.Services.AddScoped<ICollectorService, CollectorService>();
-builder.Services.AddScoped<ILogService, LogService>();
-
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+
+builder.Services.AddScoped<ICollectorService, CollectorService>();
 builder.Services.AddScoped<ICollectorRepository, CollectorRepository>();
+
+builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 
 // JWT

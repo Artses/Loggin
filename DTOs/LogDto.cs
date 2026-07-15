@@ -4,7 +4,10 @@ namespace Api_Loggin.DTOs
 {
     public record RegisterLogDto(Guid CollectorId, string path);
     public record GetLogDto(Guid CollectorId, Guid LogId);
-    public record FetchLogDto(string path, string url);
+    public record FetchLogDto(Guid Id, Guid CollectorId);
     public record UpdateLogDto(Guid Id, Guid CollectorId, string Path);
-    public record DeleteLogDto(Guid id);
+    public record DeleteLogDto(Guid Id);
+    public record ResponseLogDto(List<Line> Line);
+    public record RequestLogDto(string Path);
+    public record Line(int Order, string TimeStamp, string Text);
 }
