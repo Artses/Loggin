@@ -48,7 +48,7 @@ The C# API is organized according to clean architecture principles and dependenc
 
 ---
 
-## 🔑 Setup and Execution
+## 🔑 Setup and Execution (DEV)
 
 ### Prerequisites
 - **.NET 8.0 SDK** installed.
@@ -71,7 +71,13 @@ Adjust the PostgreSQL connection string (`ConnectionStrings`) and JWT keys in [a
 }
 ```
 
-### 2. Run the Application
+### 2. Run the database
+Run docker database to create a new database
+```powershell
+docker compose up -d
+```
+
+### 3. Run the Application
 Run the following command from the project root directory:
 
 ```powershell
@@ -80,7 +86,7 @@ dotnet run
 
 Any pending database migrations will be automatically applied at startup.
 
-### 3. Access Swagger Documentation
+### 4. Access Swagger Documentation
 Once the app is running in your development environment, open your browser and navigate to:
 👉 `http://localhost:<port>/swagger/index.html` (check your console output for the generated port).
 
