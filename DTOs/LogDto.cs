@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Routing.Constraints;
-
 namespace Api_Loggin.DTOs
 {
     public record RegisterLogDto(Guid CollectorId, string path);
@@ -7,7 +5,7 @@ namespace Api_Loggin.DTOs
     public record FetchLogDto(Guid Id, Guid CollectorId);
     public record UpdateLogDto(Guid Id, Guid CollectorId, string Path);
     public record DeleteLogDto(Guid Id);
-    public record ResponseLogDto(List<Line> Line);
     public record RequestLogDto(string Path);
-    public record Line(int Order, string TimeStamp, string Text);
+    public record ResponseLogDto(List<LogsDto> Content);
+    public record LogsDto(int Order, DateTime TimeStamp, string Line);
 }

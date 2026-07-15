@@ -2,6 +2,7 @@ using Api_Loggin.DTOs;
 using Api_Loggin.Models;
 using Api_Loggin.Repositories.Interfaces;
 using Api_Loggin.Services.Interfaces;
+using System.Text.Json;
 
 namespace Api_Loggin.Services
 {
@@ -18,36 +19,31 @@ namespace Api_Loggin.Services
             _repo = repo;
         }
 
-        public async Task<string> FetchLogAsync(FetchLogDto dto)
+        public async Task<List<LogsDto>> FetchLogAsync(FetchLogDto dto)
         {
             var log = await _repo.FetchAsync(dto);
             if (log == null)
             {
-                return "Log not found or invalid collector association.";
+                throw new KeyNotFoundException("Log not found");
             }
 
             var collector = await _collectorRepo.GetByIdAsync(dto.CollectorId);
             if (collector == null)
             {
-                return "Associated collector not found.";
+                throw new KeyNotFoundException("Associated collector not found.");
             }
 
-            try
-            {
-                var req = new RequestLogDto(log.Path); //Add line num
+            var req = new RequestLogDto(log.Path); //Add line num
 
-                var fullUrl = $"http://{collector.Url}/api/v1/logs";
+            var fullUrl = $"http://{collector.Url}/api/v1/logs";
 
-                var res = await _httpClient.PostAsJsonAsync(
-                fullUrl,
-                req);
+            var res = await _httpClient.PostAsJsonAsync(
+            fullUrl,
+            req);
 
-                return await res.Content.ReadAsStringAsync();
-            }
-            catch (Exception ex)
-            {
-                return $"Error fetching log: {ex.Message}";
-            }
+            var result = await res.Content.ReadFromJsonAsync<ResponseLogDto>();
+
+            return result?.Content ?? [];
         }
 
         public async Task<Log?> RegisterLogAsync(RegisterLogDto dto)
