@@ -19,4 +19,13 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+  <!-- The API project lives at the repository root; explicitly exclude sibling
+       desktop/test sources from the SDK's recursive default glob. -->
+  <ItemGroup>
+    <Compile Remove="Loggin.Desktop\**\*.cs;Loggin.Desktop.Tests\**\*.cs" />
+    <Content Remove="Loggin.Desktop\**\*;Loggin.Desktop.Tests\**\*" />
+    <EmbeddedResource Remove="Loggin.Desktop\**\*;Loggin.Desktop.Tests\**\*" />
+    <None Remove="Loggin.Desktop\**\*;Loggin.Desktop.Tests\**\*" />
+  </ItemGroup>
+
 </Project>
