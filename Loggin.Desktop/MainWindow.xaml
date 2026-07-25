@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Loggin.Desktop.Controls"
         Title="Loggin Desktop" Width="1220" Height="780" MinWidth="980" MinHeight="640"
-        WindowStartupLocation="CenterScreen" Icon="Assets/loggin.ico">
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <!-- Authentication -->
         <Grid Visibility="{Binding IsLoginVisible, Converter={StaticResource BoolToVisibility}}">
