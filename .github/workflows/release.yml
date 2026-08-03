@@ -1,0 +1,96 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    steps:
+      - name: Checkout completo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          cache: true
+          cache-dependency-path: |
+            Api_Loggin.csproj
+            Loggin.Desktop/Loggin.Desktop.csproj
+            Loggin.Desktop.Tests/Loggin.Desktop.Tests.csproj
+
+      - name: Calcular próxima versão
+        id: version
+        shell: pwsh
+        run: |
+          $latest = git tag --list 'v0.0.*' --sort=-version:refname | Select-Object -First 1
+          $number = if ($latest -match '^v0\.0\.(\d+)$') { [int]$Matches[1] + 1 } else { 1 }
+          $version = "0.0.$number"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+          "previous=$latest" >> $env:GITHUB_OUTPUT
+
+      - name: Restaurar, compilar, testar e publicar
+        shell: pwsh
+        run: ./build/Build-Release.ps1 -Version '${{ steps.version.outputs.version }}' -SkipInstaller
+
+      - name: Instalar Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Gerar instalador
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & $iscc "/DMyAppVersion=${{ steps.version.outputs.version }}" `
+            "/DPublishDir=${{ github.workspace }}\artifacts\publish" `
+            "/DOutputDir=${{ github.workspace }}\artifacts" `
+            "${{ github.workspace }}\installer\Loggin.iss"
+
+      - name: Gerar notas e créditos
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ./build/Generate-ReleaseNotes.ps1 `
+            -Version '${{ steps.version.outputs.version }}' `
+            -PreviousTag '${{ steps.version.outputs.previous }}' `
+            -OutputPath 'artifacts/release-notes.md'
+
+      - name: Criar tag
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a '${{ steps.version.outputs.tag }}' -m 'Loggin Desktop ${{ steps.version.outputs.version }}'
+          git push origin '${{ steps.version.outputs.tag }}'
+
+      - name: Publicar GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create '${{ steps.version.outputs.tag }}' `
+            'artifacts/Loggin-v${{ steps.version.outputs.version }}-win-x64-portable.zip' `
+            'artifacts/Loggin-Setup-v${{ steps.version.outputs.version }}-win-x64.exe' `
+            --title 'Loggin Desktop ${{ steps.version.outputs.version }}' `
+            --notes-file 'artifacts/release-notes.md' `
+            --verify-tag

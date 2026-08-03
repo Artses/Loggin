@@ -1,3 +1,5 @@
 <Solution>
   <Project Path="Api_Loggin.csproj" />
+  <Project Path="Loggin.Desktop/Loggin.Desktop.csproj" />
+  <Project Path="Loggin.Desktop.Tests/Loggin.Desktop.Tests.csproj" />
 </Solution>
