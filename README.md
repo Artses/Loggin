@@ -175,3 +175,5 @@ The icon is used by the executable, application window, taskbar, system tray, in
 * Log source availability also depends on the Go collector and the configured log path.
 * Local HTTPS certificates must be trusted by Windows; the application does not disable TLS certificate validation.
 * The **System** theme is evaluated when applying or saving settings. If the Windows theme changes while the application is running, the preview must be reapplied.
+
+[![License: CC BY-NC 4.0](https://shields.io)](https://creativecommons.org)
