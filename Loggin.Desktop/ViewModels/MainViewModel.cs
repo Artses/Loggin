@@ -87,9 +87,13 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         get => _selectedCollector;
         set
         {
-            if (!Set(ref _selectedCollector, value) || value is null) return;
-            CollectorName = value.Name;
-            CollectorUrl = value.Url;
+            if (!Set(ref _selectedCollector, value)) return;
+            if (value is not null)
+            {
+                CollectorName = value.Name;
+                CollectorUrl = value.Url;
+            }
+            DeleteCollectorCommand?.RaiseCanExecuteChanged();
         }
     }
 
@@ -98,9 +102,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         get => _selectedLog;
         set
         {
-            if (!Set(ref _selectedLog, value) || value is null) return;
-            LogPath = value.Path;
-            LogCollector = Collectors.FirstOrDefault(c => c.Id == value.CollectorId);
+            if (!Set(ref _selectedLog, value)) return;
+            if (value is not null)
+            {
+                LogPath = value.Path;
+                LogCollector = Collectors.FirstOrDefault(c => c.Id == value.CollectorId);
+            }
+            FetchLogCommand?.RaiseCanExecuteChanged();
+            DeleteLogCommand?.RaiseCanExecuteChanged();
         }
     }
 
@@ -113,11 +122,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public ICommand RefreshCommand { get; }
     public ICommand SaveCollectorCommand { get; }
     public ICommand NewCollectorCommand { get; }
-    public ICommand DeleteCollectorCommand { get; }
+    public AsyncCommand DeleteCollectorCommand { get; }
     public ICommand SaveLogCommand { get; }
-    public ICommand NewLogCommand { get; }
-    public ICommand DeleteLogCommand { get; }
-    public ICommand FetchLogCommand { get; }
+    public RelayCommand NewLogCommand { get; }
+    public AsyncCommand DeleteLogCommand { get; }
+    public AsyncCommand FetchLogCommand { get; }
     public ICommand SaveSettingsCommand { get; }
     public ICommand ResetSettingsCommand { get; }
 
@@ -213,11 +222,20 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private async Task RefreshCoreAsync(CancellationToken token)
     {
+        var selectedLogId = SelectedLog?.Id;
+        var selectedCollectorId = SelectedCollector?.Id;
+
         var collectorsTask = _api.GetCollectorsAsync(token);
         var logsTask = _api.GetLogsAsync(token);
         await Task.WhenAll(collectorsTask, logsTask);
         Replace(Collectors, await collectorsTask);
         Replace(Logs, await logsTask);
+
+        if (selectedCollectorId is { } collectorId)
+            SelectedCollector = Collectors.FirstOrDefault(c => c.Id == collectorId);
+        if (selectedLogId is { } logId)
+            SelectedLog = Logs.FirstOrDefault(l => l.Id == logId);
+
         LogCollector ??= Collectors.FirstOrDefault();
         LastSync = DateTimeOffset.Now;
         ConnectionStatus = ConnectionStatus.Online;
@@ -299,13 +317,19 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private async Task FetchSelectedLogCoreAsync(CancellationToken ct)
     {
-        if (SelectedLog is null) return;
+        if (SelectedLog is null) 
+            return;
+
         var lines = await _api.FetchLogAsync(SelectedLog.Id, SelectedLog.CollectorId, ct);
+
         Replace(LogLines, lines.OrderByDescending(l => l.TimeStamp));
         Raise(nameof(FilteredLogLines));
         Raise(nameof(CurrentLineCount));
         ActivityValues.Add(lines.Count);
-        while (ActivityValues.Count > 30) ActivityValues.RemoveAt(0);
+
+        while (ActivityValues.Count > 30) 
+            ActivityValues.RemoveAt(0);
+
         StatusMessage = $"{lines.Count} linhas recebidas.";
     }
 
