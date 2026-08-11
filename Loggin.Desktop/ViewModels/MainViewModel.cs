@@ -93,6 +93,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 CollectorName = value.Name;
                 CollectorUrl = value.Url;
             }
+            else
+            {
+                CollectorName = "";
+                CollectorUrl = "";
+            }
             DeleteCollectorCommand?.RaiseCanExecuteChanged();
         }
     }
@@ -107,6 +112,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             {
                 LogPath = value.Path;
                 LogCollector = Collectors.FirstOrDefault(c => c.Id == value.CollectorId);
+            }
+            else
+            {
+                LogPath = "";
             }
             FetchLogCommand?.RaiseCanExecuteChanged();
             DeleteLogCommand?.RaiseCanExecuteChanged();
@@ -474,7 +483,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private void ClearCollectorForm()
     {
         SelectedCollector = null;
-        _selectedCollector = null;
         CollectorName = "";
         CollectorUrl = "";
     }
@@ -482,7 +490,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private void ClearLogForm()
     {
         SelectedLog = null;
-        _selectedLog = null;
         LogPath = "";
         LogCollector = Collectors.FirstOrDefault();
     }

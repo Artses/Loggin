@@ -31,6 +31,34 @@ public partial class MainWindow : Window
         Loaded += OnLoaded;
         Closing += OnClosing;
         StateChanged += OnStateChanged;
+        _viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainViewModel.ActivePage) || e.PropertyName == nameof(MainViewModel.IsShellVisible))
+                Dispatcher.Invoke(() => HighlightNav(_viewModel.ActivePage));
+        };
+    }
+
+    private void HighlightNav(string page)
+    {
+        var activeStyle = (Style)FindResource("NavButtonActive");
+        var normalStyle = (Style)FindResource("NavButton");
+        var map = new System.Collections.Generic.Dictionary<string, System.Windows.Controls.Button>
+        {
+            ["Dashboard"] = NavDashboard,
+            ["Collectors"] = NavCollectors,
+            ["Logs"] = NavLogs,
+            ["Settings"] = NavSettings
+        };
+        foreach (var (key, btn) in map)
+            btn.Style = key == page ? activeStyle : normalStyle;
+    }
+
+    private void NavButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender == NavDashboard) _viewModel.ActivePage = "Dashboard";
+        else if (sender == NavCollectors) _viewModel.ActivePage = "Collectors";
+        else if (sender == NavLogs) _viewModel.ActivePage = "Logs";
+        else if (sender == NavSettings) _viewModel.ActivePage = "Settings";
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)

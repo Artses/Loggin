@@ -12,14 +12,37 @@ public static class ThemeService
         var dark = settings.Theme == ThemePreference.Dark ||
                    settings.Theme == ThemePreference.System && IsWindowsDark();
         Set("PrimaryBrush", settings.PrimaryColor);
+        Set("PrimaryHoverBrush", Darken(settings.PrimaryColor, 0.08));
         Set("SecondaryBrush", settings.SecondaryColor);
         Set("AccentBrush", settings.AccentColor);
-        Set("WindowBrush", dark ? "#111522" : "#F4F6FB");
-        Set("SurfaceBrush", dark ? "#1A2030" : "#FFFFFF");
-        Set("SurfaceAltBrush", dark ? "#232B3E" : "#EEF1F8");
+        Set("WindowBrush", dark ? "#0E1019" : "#F4F6FB");
+        Set("SurfaceBrush", dark ? "#191C2A" : "#FFFFFF");
+        Set("SurfaceAltBrush", dark ? "#232738" : "#EEF1F8");
+        Set("SurfaceHoverBrush", dark ? "#2A3042" : "#E8EDF8");
         Set("TextBrush", dark ? "#F5F7FC" : "#172033");
-        Set("MutedTextBrush", dark ? "#AAB3C8" : "#687189");
-        Set("BorderBrush", dark ? "#323C52" : "#DDE2EE");
+        Set("MutedTextBrush", dark ? "#9BA3BA" : "#687189");
+        Set("BorderBrush", dark ? "#2D3344" : "#DDE2EE");
+        Set("DangerHoverBrush", Darken(settings.PrimaryColor == "#E5484D" ? settings.PrimaryColor : "#E5484D", 0.10));
+
+        // Sidebar stays dark in both themes for a consistent app identity
+        Set("SidebarBrush", dark ? "#11121B" : "#15131B");
+        Set("SidebarTextBrush", dark ? "#C9C5D6" : "#C9C5D6");
+        Set("SidebarActiveBrush", settings.PrimaryColor);
+        Set("SidebarHoverBrush", dark ? "#1F2230" : "#221F2E");
+        Set("SidebarHeaderBrush", dark ? "#F5F7FC" : "#FFFFFF");
+    }
+
+    private static string Darken(string hex, double amount)
+    {
+        try
+        {
+            var c = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex);
+            var r = (byte)Math.Max(0, c.R * (1 - amount));
+            var g = (byte)Math.Max(0, c.G * (1 - amount));
+            var b = (byte)Math.Max(0, c.B * (1 - amount));
+            return $"#{r:X2}{g:X2}{b:X2}";
+        }
+        catch { return hex; }
     }
 
     public static bool IsValidColor(string value)

@@ -5,21 +5,27 @@
         Title="Loggin Desktop" Width="1220" Height="780" MinWidth="980" MinHeight="640"
         WindowStartupLocation="CenterScreen">
     <Grid>
-        <!-- Authentication -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- Authentication                                                 -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
         <Grid Visibility="{Binding IsLoginVisible, Converter={StaticResource BoolToVisibility}}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.1*"/>
+                <ColumnDefinition Width="1.15*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Border Background="{DynamicResource PrimaryBrush}">
-                <Grid Margin="60">
+
+            <!-- Hero panel -->
+            <Border Background="{DynamicResource SidebarBrush}">
+                <Grid Margin="60,50">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal">
-                        <Border Width="50" Height="50" CornerRadius="14" Background="#28FFFFFF">
+
+                    <!-- Logo -->
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Border Width="46" Height="46" CornerRadius="13" Background="#28FFFFFF">
                             <Viewbox Margin="10">
                                 <Canvas Width="32" Height="32">
                                     <Path Stroke="White" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
@@ -29,58 +35,79 @@
                                 </Canvas>
                             </Viewbox>
                         </Border>
-                        <TextBlock Text="Loggin" Foreground="White" FontWeight="Bold" FontSize="26"
+                        <TextBlock Text="Loggin" Foreground="White" FontWeight="Bold" FontSize="24"
                                    VerticalAlignment="Center" Margin="14,0,0,0"/>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" VerticalAlignment="Center" MaxWidth="470">
+
+                    <!-- Pitch -->
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center" MaxWidth="450">
                         <TextBlock Text="Seus eventos.&#x0a;Uma visão clara." Foreground="White"
-                                   FontSize="48" FontWeight="Bold" LineHeight="54"/>
-                        <TextBlock Margin="0,20,0,0" TextWrapping="Wrap" Foreground="#DFFFFFFF" FontSize="17"
+                                   FontSize="44" FontWeight="Bold" LineHeight="52"/>
+                        <Border Width="48" Height="3" Background="{DynamicResource SecondaryBrush}"
+                                CornerRadius="2" Margin="0,22,0,22"/>
+                        <TextBlock Margin="0,0,0,0" TextWrapping="Wrap" Foreground="#D0FFFFFF" FontSize="16"
                                    Text="Gerencie coletores, acompanhe logs e identifique atividade em tempo real a partir de um único painel."/>
                     </StackPanel>
-                    <TextBlock Grid.Row="2" Text="Observabilidade para Windows • por Artses" Foreground="#BFFFFFFF"/>
+
+                    <TextBlock Grid.Row="2" Text="Observabilidade para Windows • por Artses" Foreground="#A0FFFFFF" FontSize="12"/>
                 </Grid>
             </Border>
-            <Grid Grid.Column="1" Margin="70,45">
-                <StackPanel VerticalAlignment="Center" MaxWidth="410">
-                    <TextBlock Text="{Binding AuthActionText}" FontSize="31" FontWeight="Bold"/>
-                    <TextBlock Text="Conecte-se ao backend Loggin para continuar." Margin="0,8,0,28"
-                               Foreground="{DynamicResource MutedTextBrush}"/>
+
+            <!-- Auth form -->
+            <Grid Grid.Column="1" Background="{DynamicResource WindowBrush}">
+                <StackPanel VerticalAlignment="Center" MaxWidth="400" Margin="60">
+                    <!-- Heading -->
+                    <TextBlock Text="{Binding AuthActionText}" FontSize="28" FontWeight="Bold"/>
+                    <TextBlock Text="Conecte-se ao backend Loggin para continuar." Margin="0,8,0,32"
+                               Foreground="{DynamicResource MutedTextBrush}" FontSize="14"/>
+
+                    <!-- Name (only for register) -->
                     <StackPanel Visibility="{Binding IsRegisterMode, Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock Text="Nome" Margin="0,0,0,6"/>
-                        <TextBox Text="{Binding RegistrationName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"/>
+                        <TextBlock Text="Nome" Style="{StaticResource SectionLabel}"/>
+                        <TextBox Text="{Binding RegistrationName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,18"/>
                     </StackPanel>
-                    <TextBlock Text="E-mail" Margin="0,0,0,6"/>
-                    <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"/>
-                    <TextBlock Text="Senha" Margin="0,0,0,6"/>
-                    <PasswordBox x:Name="PasswordInput" PasswordChanged="PasswordInput_OnPasswordChanged" Margin="0,0,0,16"/>
-                    <TextBlock Text="Endereço do backend" Margin="0,0,0,6"/>
+
+                    <TextBlock Text="E-mail" Style="{StaticResource SectionLabel}"/>
+                    <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,18"/>
+
+                    <TextBlock Text="Senha" Style="{StaticResource SectionLabel}"/>
+                    <PasswordBox x:Name="PasswordInput" PasswordChanged="PasswordInput_OnPasswordChanged" Margin="0,0,0,18"/>
+
+                    <TextBlock Text="Endereço do backend" Style="{StaticResource SectionLabel}"/>
                     <TextBox Text="{Binding Settings.BackendUrl, UpdateSourceTrigger=PropertyChanged}"
-                             ToolTip="Exemplo: https://localhost:7001/" Margin="0,0,0,22"/>
-                    <Button Content="{Binding AuthActionText}" Command="{Binding AuthenticateCommand}" Height="44"/>
-                    <Button Margin="0,10,0,0" Style="{StaticResource GhostButton}"
-                            Click="ToggleAuthMode_OnClick" Content="Alternar entre entrar e criar conta"/>
-                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,20,0,0"
-                               Foreground="{DynamicResource MutedTextBrush}"/>
+                             ToolTip="Exemplo: https://localhost:7001/" Margin="0,0,0,26"/>
+
+                    <Button Content="{Binding AuthActionText}" Command="{Binding AuthenticateCommand}" Height="46" FontSize="14"/>
+                    <Button Margin="0,12,0,0" Style="{StaticResource GhostButton}"
+                            Click="ToggleAuthMode_OnClick" Content="Alternar entre entrar e criar conta" Height="44"/>
+
+                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,22,0,0"
+                               Foreground="{DynamicResource MutedTextBrush}" FontSize="13"/>
                 </StackPanel>
             </Grid>
         </Grid>
 
-        <!-- Application shell -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- Application Shell                                              -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
         <Grid Visibility="{Binding IsShellVisible, Converter={StaticResource BoolToVisibility}}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="236"/>
+                <ColumnDefinition Width="260"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
-                <Grid Margin="18">
+
+            <!-- ═══ Sidebar ═══ -->
+            <Border Background="{DynamicResource SidebarBrush}">
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal" Margin="4,8,0,30">
-                        <Border Width="42" Height="42" CornerRadius="12" Background="{DynamicResource PrimaryBrush}">
+
+                    <!-- Logo -->
+                    <StackPanel Orientation="Horizontal" Margin="22,24,0,28">
+                        <Border Width="40" Height="40" CornerRadius="11" Background="#28FFFFFF">
                             <Viewbox Margin="9">
                                 <Canvas Width="32" Height="32">
                                     <Path Stroke="White" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
@@ -90,99 +117,182 @@
                                 </Canvas>
                             </Viewbox>
                         </Border>
-                        <StackPanel Margin="11,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="LOGGIN" FontWeight="Bold" FontSize="17"/>
-                            <TextBlock Text="DESKTOP" FontSize="10" Foreground="{DynamicResource MutedTextBrush}"/>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="LOGGIN" FontWeight="Bold" FontSize="16" Foreground="White"/>
+                            <TextBlock Text="DESKTOP" FontSize="10" Foreground="#80C9C5D6" FontWeight="SemiBold"/>
                         </StackPanel>
                     </StackPanel>
-                    <StackPanel Grid.Row="1">
-                        <Button Content="⌂  Visão geral" Command="{Binding NavigateDashboardCommand}" Style="{StaticResource GhostButton}" HorizontalContentAlignment="Left" Margin="0,0,0,8"/>
-                        <Button Content="⬡  Coletores" Command="{Binding NavigateCollectorsCommand}" Style="{StaticResource GhostButton}" HorizontalContentAlignment="Left" Margin="0,0,0,8"/>
-                        <Button Content="≡  Fontes e logs" Command="{Binding NavigateLogsCommand}" Style="{StaticResource GhostButton}" HorizontalContentAlignment="Left" Margin="0,0,0,8"/>
-                        <Button Content="⚙  Configurações" Command="{Binding NavigateSettingsCommand}" Style="{StaticResource GhostButton}" HorizontalContentAlignment="Left"/>
+
+                    <!-- Nav buttons -->
+                    <StackPanel Grid.Row="1" Margin="10,0">
+                        <TextBlock Text="NAVEGAÇÃO" Foreground="#60C9C5D6" FontSize="10" FontWeight="SemiBold"
+                                   Margin="12,0,0,10"/>
+                        <Button x:Name="NavDashboard" Content="  Visão geral" Command="{Binding NavigateDashboardCommand}"
+                                Style="{StaticResource NavButton}" Margin="0,0,0,6"
+                                Click="NavButton_Click"/>
+                        <Button x:Name="NavCollectors" Content="  Coletores" Command="{Binding NavigateCollectorsCommand}"
+                                Style="{StaticResource NavButton}" Margin="0,0,0,6"
+                                Click="NavButton_Click"/>
+                        <Button x:Name="NavLogs" Content="  Fontes e logs" Command="{Binding NavigateLogsCommand}"
+                                Style="{StaticResource NavButton}" Margin="0,0,0,6"
+                                Click="NavButton_Click"/>
+                        <Button x:Name="NavSettings" Content="  Configurações" Command="{Binding NavigateSettingsCommand}"
+                                Style="{StaticResource NavButton}"
+                                Click="NavButton_Click"/>
                     </StackPanel>
-                    <Border Grid.Row="2" Background="{DynamicResource SurfaceAltBrush}" CornerRadius="10" Padding="12">
+
+                    <!-- User card -->
+                    <Border Grid.Row="2" Background="#1AFFFFFF" CornerRadius="12" Padding="14,12" Margin="16,0,16,20">
                         <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="{Binding UserName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Text="{Binding ConnectionText}" Foreground="{DynamicResource MutedTextBrush}" FontSize="11"/>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="34" Height="34" CornerRadius="9" Background="{DynamicResource PrimaryBrush}">
+                                <TextBlock Text="U" Foreground="White" FontWeight="Bold" FontSize="15"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                <TextBlock Text="{Binding UserName}" Foreground="White" FontWeight="SemiBold" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding ConnectionText}" Foreground="#80C9C5D6" FontSize="10"/>
                             </StackPanel>
-                            <Button Grid.Column="1" Content="Sair" Command="{Binding LogoutCommand}" Style="{StaticResource GhostButton}" Padding="8,5"/>
+                            <Button Grid.Column="2" Content="Sair" Command="{Binding LogoutCommand}"
+                                    Style="{StaticResource GhostButton}" Padding="8,5" FontSize="11"
+                                    VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
                 </Grid>
             </Border>
 
+            <!-- ═══ Main content area ═══ -->
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="26,15">
-                    <Grid>
+
+                <!-- Top bar -->
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                    <Grid Margin="28,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Central de observabilidade" FontWeight="Bold" FontSize="19"/>
-                            <TextBlock Text="{Binding LastSyncText}" Foreground="{DynamicResource MutedTextBrush}" FontSize="12"/>
+                            <TextBlock Text="Central de observabilidade" FontWeight="Bold" FontSize="18"/>
+                            <TextBlock Text="{Binding LastSyncText}" Foreground="{DynamicResource MutedTextBrush}" FontSize="12" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                            <Ellipse Width="9" Height="9" Fill="{DynamicResource SecondaryBrush}" Margin="0,0,8,0"/>
-                            <TextBlock Text="{Binding ConnectionText}" VerticalAlignment="Center"/>
-                            <Button Content="Atualizar" Command="{Binding RefreshCommand}" Style="{StaticResource GhostButton}" Margin="18,0,0,0"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Connection pill -->
+                            <Border Background="#2240C7B7" CornerRadius="20" Padding="10,5">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse Width="7" Height="7" Fill="{DynamicResource SecondaryBrush}" Margin="0,0,7,0"
+                                             x:Name="ConnectionDot"/>
+                                    <TextBlock Text="{Binding ConnectionText}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <Button Content="Atualizar" Command="{Binding RefreshCommand}" Style="{StaticResource GhostButton}" Margin="14,0,0,0" Padding="16,8"/>
                         </StackPanel>
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="1" Margin="26">
-                    <!-- Dashboard -->
-                    <ScrollViewer Visibility="{Binding IsDashboardVisible, Converter={StaticResource BoolToVisibility}}" VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <TextBlock Text="Visão geral" FontSize="30" FontWeight="Bold"/>
-                            <TextBlock Text="Acompanhe a saúde e o volume do seu ambiente." Foreground="{DynamicResource MutedTextBrush}" Margin="0,5,0,22"/>
+                <!-- Page body -->
+                <Grid Grid.Row="1" Background="{DynamicResource WindowBrush}">
+
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <!-- Dashboard                                                    -->
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <ScrollViewer Visibility="{Binding IsDashboardVisible, Converter={StaticResource BoolToVisibility}}"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="28,28,28,18">
+                            <TextBlock Text="Visão geral" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="Acompanhe a saúde e o volume do seu ambiente." Foreground="{DynamicResource MutedTextBrush}" FontSize="14" Margin="0,6,0,28"/>
+
+                            <!-- Stat cards -->
                             <UniformGrid Columns="3" Margin="0,0,0,20">
-                                <Border Style="{StaticResource Card}" Margin="0,0,12,0">
+                                <!-- Collectors -->
+                                <Border Style="{StaticResource StatCard}" Margin="0,0,14,0">
                                     <StackPanel>
-                                        <TextBlock Text="COLETORES" Foreground="{DynamicResource MutedTextBrush}" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding CollectorCount}" FontSize="34" FontWeight="Bold" Margin="0,8,0,0"/>
-                                        <TextBlock Text="agentes configurados" Foreground="{DynamicResource MutedTextBrush}"/>
+                                        <Border Width="38" Height="38" CornerRadius="10" Background="#206D5EF5">
+                                            <Viewbox Margin="10">
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Stroke="{DynamicResource PrimaryBrush}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                                          Data="M 3,4 L 21,4 M 3,10 L 21,10 M 3,16 L 21,16"/>
+                                                </Canvas>
+                                            </Viewbox>
+                                        </Border>
+                                        <TextBlock Text="{Binding CollectorCount}" FontSize="38" FontWeight="Bold" Margin="0,14,0,2"/>
+                                        <TextBlock Text="Coletores" Foreground="{DynamicResource MutedTextBrush}" FontSize="13"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Style="{StaticResource Card}" Margin="6,0">
+                                <!-- Log sources -->
+                                <Border Style="{StaticResource StatCard}" Margin="7,0">
                                     <StackPanel>
-                                        <TextBlock Text="FONTES DE LOG" Foreground="{DynamicResource MutedTextBrush}" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding LogCount}" FontSize="34" FontWeight="Bold" Margin="0,8,0,0"/>
-                                        <TextBlock Text="caminhos monitorados" Foreground="{DynamicResource MutedTextBrush}"/>
+                                        <Border Width="38" Height="38" CornerRadius="10" Background="#2020C7B7">
+                                            <Viewbox Margin="9">
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Stroke="{DynamicResource SecondaryBrush}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                                          Data="M 4,3 L 4,21 M 8,3 L 8,21 M 14,7 L 16,7 M 14,12 L 18,12 M 14,17 L 16,17"/>
+                                                </Canvas>
+                                            </Viewbox>
+                                        </Border>
+                                        <TextBlock Text="{Binding LogCount}" FontSize="38" FontWeight="Bold" Margin="0,14,0,2"/>
+                                        <TextBlock Text="Fontes de log" Foreground="{DynamicResource MutedTextBrush}" FontSize="13"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Style="{StaticResource Card}" Margin="12,0,0,0">
+                                <!-- Lines visible -->
+                                <Border Style="{StaticResource StatCard}" Margin="14,0,0,0">
                                     <StackPanel>
-                                        <TextBlock Text="LINHAS VISÍVEIS" Foreground="{DynamicResource MutedTextBrush}" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding CurrentLineCount}" FontSize="34" FontWeight="Bold" Margin="0,8,0,0"/>
-                                        <TextBlock Text="na última coleta" Foreground="{DynamicResource MutedTextBrush}"/>
+                                        <Border Width="38" Height="38" CornerRadius="10" Background="#20F59E0B">
+                                            <Viewbox Margin="9">
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Stroke="{DynamicResource AccentBrush}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                                          Data="M 3,20 L 9,8 L 14,14 L 21,4"/>
+                                                </Canvas>
+                                            </Viewbox>
+                                        </Border>
+                                        <TextBlock Text="{Binding CurrentLineCount}" FontSize="38" FontWeight="Bold" Margin="0,14,0,2"/>
+                                        <TextBlock Text="Linhas visíveis" Foreground="{DynamicResource MutedTextBrush}" FontSize="13"/>
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
+
+                            <!-- Activity chart -->
                             <Border Style="{StaticResource Card}">
                                 <StackPanel>
-                                    <TextBlock Text="Atividade em tempo real" FontSize="18" FontWeight="Bold"/>
-                                    <TextBlock Text="Linhas retornadas nas últimas 30 coletas" Foreground="{DynamicResource MutedTextBrush}" Margin="0,3,0,15"/>
-                                    <controls:ActivityChart Values="{Binding ActivityValues}" Height="255"/>
+                                    <Grid Margin="0,0,0,4">
+                                        <StackPanel>
+                                            <TextBlock Text="Atividade em tempo real" FontSize="17" FontWeight="Bold"/>
+                                            <TextBlock Text="Linhas retornadas nas últimas 30 coletas" Foreground="{DynamicResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                        <Border HorizontalAlignment="Right" Background="{DynamicResource SurfaceAltBrush}" CornerRadius="6" Padding="8,4">
+                                            <TextBlock Text="últimos 30" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" FontWeight="SemiBold"/>
+                                        </Border>
+                                    </Grid>
+                                    <controls:ActivityChart Values="{Binding ActivityValues}" Height="240" Margin="0,12,0,0"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
                     </ScrollViewer>
 
-                    <!-- Collectors -->
-                    <Grid Visibility="{Binding IsCollectorsVisible, Converter={StaticResource BoolToVisibility}}">
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <!-- Collectors                                                   -->
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <Grid Visibility="{Binding IsCollectorsVisible, Converter={StaticResource BoolToVisibility}}" Margin="28,28,28,18">
                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.65*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                        <StackPanel Grid.ColumnSpan="2" Margin="0,0,0,20">
-                            <TextBlock Text="Coletores" FontSize="30" FontWeight="Bold"/>
-                            <TextBlock Text="Cadastre os agentes que expõem logs para o orquestrador." Foreground="{DynamicResource MutedTextBrush}"/>
+
+                        <StackPanel Grid.ColumnSpan="2" Margin="0,0,0,24">
+                            <TextBlock Text="Coletores" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="Cadastre os agentes que expõem logs para o orquestrador." Foreground="{DynamicResource MutedTextBrush}" FontSize="14" Margin="0,6,0,0"/>
                         </StackPanel>
-                        <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,0,10,0">
-                            <DataGrid ItemsSource="{Binding Collectors}" SelectedItem="{Binding SelectedCollector}">
+
+                        <!-- Collector list -->
+                        <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,0,12,0" Padding="0">
+                            <DataGrid ItemsSource="{Binding Collectors}" SelectedItem="{Binding SelectedCollector}"
+                                      BorderThickness="0">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="*"/>
                                     <DataGridTextColumn Header="Endereço" Binding="{Binding Url}" Width="1.6*"/>
@@ -190,56 +300,75 @@
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>
-                        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0">
+
+                        <!-- Collector detail -->
+                        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Margin="12,0,0,0">
                             <StackPanel>
-                                <TextBlock Text="Detalhes do coletor" FontSize="18" FontWeight="Bold" Margin="0,0,0,18"/>
-                                <TextBlock Text="Nome" Margin="0,0,0,6"/>
-                                <TextBox Text="{Binding CollectorName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14"/>
-                                <TextBlock Text="Host e porta" Margin="0,0,0,6"/>
-                                <TextBox Text="{Binding CollectorUrl, UpdateSourceTrigger=PropertyChanged}" ToolTip="Exemplo: 127.0.0.1:8080" Margin="0,0,0,20"/>
-                                <Button Content="Salvar coletor" Command="{Binding SaveCollectorCommand}"/>
-                                <Button Content="Novo / limpar" Command="{Binding NewCollectorCommand}" Style="{StaticResource GhostButton}" Margin="0,9,0,0"/>
-                                <Button Content="Excluir selecionado" Command="{Binding DeleteCollectorCommand}" Style="{StaticResource DangerButton}" Margin="0,9,0,0"/>
+                                <TextBlock Text="Detalhes do coletor" FontSize="17" FontWeight="Bold" Margin="0,0,0,20"/>
+                                <TextBlock Text="Nome" Style="{StaticResource SectionLabel}"/>
+                                <TextBox Text="{Binding CollectorName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"/>
+                                <TextBlock Text="Host e porta" Style="{StaticResource SectionLabel}"/>
+                                <TextBox Text="{Binding CollectorUrl, UpdateSourceTrigger=PropertyChanged}" ToolTip="Exemplo: 127.0.0.1:8080" Margin="0,0,0,24"/>
+                                <Button Content="Salvar coletor" Command="{Binding SaveCollectorCommand}" Height="42"/>
+                                <Button Content="Novo / limpar" Command="{Binding NewCollectorCommand}" Style="{StaticResource GhostButton}" Margin="0,10,0,0" Height="42"/>
+                                <Button Content="Excluir selecionado" Command="{Binding DeleteCollectorCommand}" Style="{StaticResource DangerButton}" Margin="0,10,0,0" Height="42"/>
                             </StackPanel>
                         </Border>
                     </Grid>
 
-                    <!-- Logs -->
-                    <Grid Visibility="{Binding IsLogsVisible, Converter={StaticResource BoolToVisibility}}">
-                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="220"/><RowDefinition/></Grid.RowDefinitions>
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <!-- Logs                                                         -->
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <Grid Visibility="{Binding IsLogsVisible, Converter={StaticResource BoolToVisibility}}" Margin="28,28,28,18">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.6*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                        <StackPanel Grid.ColumnSpan="2" Margin="0,0,0,18">
-                            <TextBlock Text="Fontes e logs" FontSize="30" FontWeight="Bold"/>
-                            <TextBlock Text="Configure caminhos e consulte as linhas retornadas pelo coletor." Foreground="{DynamicResource MutedTextBrush}"/>
+
+                        <StackPanel Grid.ColumnSpan="2" Margin="0,0,0,20">
+                            <TextBlock Text="Fontes e logs" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="Configure caminhos e consulte as linhas retornadas pelo coletor." Foreground="{DynamicResource MutedTextBrush}" FontSize="14" Margin="0,6,0,0"/>
                         </StackPanel>
-                        <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,0,10,10">
-                            <DataGrid ItemsSource="{Binding Logs}" SelectedItem="{Binding SelectedLog}">
+
+                        <!-- Log sources list -->
+                        <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,0,12,12" Padding="0">
+                            <DataGrid ItemsSource="{Binding Logs}" SelectedItem="{Binding SelectedLog}"
+                                      Height="220" BorderThickness="0">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Caminho" Binding="{Binding Path}" Width="*"/>
                                     <DataGridTextColumn Header="Coletor" Binding="{Binding CollectorId}" Width="1.2*"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>
-                        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,10">
+
+                        <!-- Log detail form -->
+                        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Margin="12,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="Fonte selecionada" FontWeight="Bold" FontSize="17" Margin="0,0,0,12"/>
-                                <ComboBox ItemsSource="{Binding Collectors}" SelectedItem="{Binding LogCollector}" DisplayMemberPath="Name" Margin="0,0,0,10"/>
-                                <TextBox Text="{Binding LogPath, UpdateSourceTrigger=PropertyChanged}" ToolTip="Caminho do arquivo no host do coletor" Margin="0,0,0,12"/>
+                                <TextBlock Text="Fonte selecionada" FontWeight="Bold" FontSize="16" Margin="0,0,0,16"/>
+                                <TextBlock Text="Coletor" Style="{StaticResource SectionLabel}"/>
+                                <ComboBox ItemsSource="{Binding Collectors}" SelectedItem="{Binding LogCollector}" DisplayMemberPath="Name" Margin="0,0,0,12"/>
+                                <TextBlock Text="Caminho" Style="{StaticResource SectionLabel}"/>
+                                <TextBox Text="{Binding LogPath, UpdateSourceTrigger=PropertyChanged}" ToolTip="Caminho do arquivo no host do coletor" Margin="0,0,0,16"/>
                                 <WrapPanel>
-                                    <Button Content="Salvar" Command="{Binding SaveLogCommand}" Margin="0,0,8,0"/>
-                                    <Button Content="Novo" Command="{Binding NewLogCommand}" Style="{StaticResource GhostButton}" Margin="0,0,8,0"/>
-                                    <Button Content="Excluir" Command="{Binding DeleteLogCommand}" Style="{StaticResource DangerButton}"/>
+                                    <Button Content="Salvar" Command="{Binding SaveLogCommand}" Margin="0,0,8,0" Height="38"/>
+                                    <Button Content="Novo" Command="{Binding NewLogCommand}" Style="{StaticResource GhostButton}" Margin="0,0,8,0" Height="38"/>
+                                    <Button Content="Excluir" Command="{Binding DeleteLogCommand}" Style="{StaticResource DangerButton}" Height="38"/>
                                 </WrapPanel>
+                                <Button Content="Coletar agora" Command="{Binding FetchLogCommand}" Style="{StaticResource GhostButton}" Margin="0,14,0,0" Height="38"/>
                             </StackPanel>
                         </Border>
-                        <Border Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource Card}" Margin="0,10,0,0">
+
+                        <!-- Log lines view -->
+                        <Border Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource Card}" Margin="0,12,0,0" Padding="0">
                             <Grid>
                                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
-                                <Grid Margin="0,0,0,12">
-                                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="300" HorizontalAlignment="Left" ToolTip="Filtrar linhas"/>
-                                    <Button Content="Coletar agora" Command="{Binding FetchLogCommand}" HorizontalAlignment="Right"/>
-                                </Grid>
-                                <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredLogLines}">
+                                <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="22,14">
+                                    <Grid>
+                                        <TextBlock Text="Linhas coletadas" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="280" ToolTip="Filtrar linhas"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                                <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredLogLines}" BorderThickness="0">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="#" Binding="{Binding Order}" Width="55"/>
                                         <DataGridTextColumn Header="Horário" Binding="{Binding TimeStamp, StringFormat={}{0:dd/MM HH:mm:ss}}" Width="135"/>
@@ -250,75 +379,93 @@
                         </Border>
                     </Grid>
 
-                    <!-- Settings -->
-                    <ScrollViewer Visibility="{Binding IsSettingsVisible, Converter={StaticResource BoolToVisibility}}" VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <TextBlock Text="Configurações" FontSize="30" FontWeight="Bold"/>
-                            <TextBlock Text="Personalize a experiência e a conexão." Foreground="{DynamicResource MutedTextBrush}" Margin="0,5,0,20"/>
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <!-- Settings                                                    -->
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <ScrollViewer Visibility="{Binding IsSettingsVisible, Converter={StaticResource BoolToVisibility}}"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="28,28,28,18">
+                            <TextBlock Text="Configurações" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="Personalize a experiência e a conexão." Foreground="{DynamicResource MutedTextBrush}" FontSize="14" Margin="0,6,0,28"/>
+
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                <StackPanel Margin="0,0,10,0">
-                                    <Border Style="{StaticResource Card}" Margin="0,0,0,18">
+
+                                <!-- Left column -->
+                                <StackPanel Margin="0,0,12,0">
+                                    <!-- Appearance -->
+                                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                                         <StackPanel>
-                                            <TextBlock Text="Aparência" FontWeight="Bold" FontSize="18" Margin="0,0,0,14"/>
-                                            <TextBlock Text="Tema" Margin="0,0,0,5"/>
-                                            <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding Settings.Theme}" Margin="0,0,0,12"/>
-                                            <TextBlock Text="Paleta predefinida" Margin="0,0,0,5"/>
-                                            <ComboBox ItemsSource="{Binding Palettes}" SelectionChanged="Palette_OnSelectionChanged" Margin="0,0,0,12"/>
-                                            <TextBlock Text="Cor principal" Margin="0,0,0,5"/>
-                                            <TextBox Text="{Binding Settings.PrimaryColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
-                                            <TextBlock Text="Cor secundária" Margin="0,0,0,5"/>
-                                            <TextBox Text="{Binding Settings.SecondaryColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
-                                            <TextBlock Text="Cor de destaque" Margin="0,0,0,5"/>
-                                            <TextBox Text="{Binding Settings.AccentColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
-                                            <Button Content="Visualizar prévia" Click="PreviewTheme_OnClick" Style="{StaticResource GhostButton}"/>
+                                            <TextBlock Text="Aparência" FontWeight="Bold" FontSize="17" Margin="0,0,0,18"/>
+                                            <TextBlock Text="Tema" Style="{StaticResource SectionLabel}"/>
+                                            <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding Settings.Theme}" Margin="0,0,0,16"/>
+                                            <TextBlock Text="Paleta predefinida" Style="{StaticResource SectionLabel}"/>
+                                            <ComboBox ItemsSource="{Binding Palettes}" SelectionChanged="Palette_OnSelectionChanged" Margin="0,0,0,16"/>
+                                            <TextBlock Text="Cor principal" Style="{StaticResource SectionLabel}"/>
+                                            <TextBox Text="{Binding Settings.PrimaryColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+                                            <TextBlock Text="Cor secundária" Style="{StaticResource SectionLabel}"/>
+                                            <TextBox Text="{Binding Settings.SecondaryColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+                                            <TextBlock Text="Cor de destaque" Style="{StaticResource SectionLabel}"/>
+                                            <TextBox Text="{Binding Settings.AccentColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"/>
+                                            <Button Content="Visualizar prévia" Click="PreviewTheme_OnClick" Style="{StaticResource GhostButton}" Height="40"/>
                                         </StackPanel>
                                     </Border>
+
+                                    <!-- About -->
                                     <Border Style="{StaticResource Card}">
                                         <StackPanel>
-                                            <TextBlock Text="Sobre" FontWeight="Bold" FontSize="18"/>
-                                            <TextBlock Text="Loggin Desktop" FontWeight="SemiBold" Margin="0,12,0,0"/>
-                                            <TextBlock Text="{Binding Version, StringFormat=Versão {0}}" Foreground="{DynamicResource MutedTextBrush}"/>
-                                            <TextBlock Text="Autor principal: Artses" Margin="0,8,0,0"/>
-                                            <TextBlock Text="Contribuidores: gerados automaticamente nas releases" TextWrapping="Wrap" Foreground="{DynamicResource MutedTextBrush}"/>
-                                            <TextBlock Text="github.com/lucasfhs/Loggin" Foreground="{DynamicResource PrimaryBrush}" Margin="0,8,0,0"/>
+                                            <TextBlock Text="Sobre" FontWeight="Bold" FontSize="17"/>
+                                            <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,14,0,14"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                <TextBlock Text="Loggin Desktop" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Version, StringFormat='  v{0}'}" Foreground="{DynamicResource MutedTextBrush}"/>
+                                            </StackPanel>
+                                            <TextBlock Text="Autor principal: Artses" Margin="0,4,0,4"/>
+                                            <TextBlock Text="github.com/lucasfhs/Loggin" Foreground="{DynamicResource PrimaryBrush}"/>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
-                                <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                    <Border Style="{StaticResource Card}" Margin="0,0,0,18">
+
+                                <!-- Right column -->
+                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                    <!-- Backend -->
+                                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                                         <StackPanel>
-                                            <TextBlock Text="Backend e sincronização" FontWeight="Bold" FontSize="18" Margin="0,0,0,14"/>
-                                            <TextBlock Text="Endereço base" Margin="0,0,0,5"/>
-                                            <TextBox Text="{Binding Settings.BackendUrl, UpdateSourceTrigger=PropertyChanged}" ToolTip="Exemplo: https://localhost:7001/" Margin="0,0,0,12"/>
-                                            <TextBlock Text="Timeout (segundos)" Margin="0,0,0,5"/>
-                                            <TextBox Text="{Binding Settings.TimeoutSeconds}" Margin="0,0,0,12"/>
-                                            <TextBlock Text="Intervalo de atualização (segundos)" Margin="0,0,0,5"/>
-                                            <TextBox Text="{Binding Settings.RefreshIntervalSeconds}" Margin="0,0,0,12"/>
+                                            <TextBlock Text="Backend e sincronização" FontWeight="Bold" FontSize="17" Margin="0,0,0,16"/>
+                                            <TextBlock Text="Endereço base" Style="{StaticResource SectionLabel}"/>
+                                            <TextBox Text="{Binding Settings.BackendUrl, UpdateSourceTrigger=PropertyChanged}" ToolTip="Exemplo: https://localhost:7001/" Margin="0,0,0,14"/>
+                                            <TextBlock Text="Timeout (segundos)" Style="{StaticResource SectionLabel}"/>
+                                            <TextBox Text="{Binding Settings.TimeoutSeconds}" Margin="0,0,0,14"/>
+                                            <TextBlock Text="Intervalo de atualização (segundos)" Style="{StaticResource SectionLabel}"/>
+                                            <TextBox Text="{Binding Settings.RefreshIntervalSeconds}" Margin="0,0,0,14"/>
                                             <CheckBox Content="Reconectar automaticamente" IsChecked="{Binding Settings.AutoReconnect}"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Style="{StaticResource Card}" Margin="0,0,0,18">
+
+                                    <!-- Windows & tray -->
+                                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                                         <StackPanel>
-                                            <TextBlock Text="Windows e bandeja" FontWeight="Bold" FontSize="18" Margin="0,0,0,12"/>
+                                            <TextBlock Text="Windows e bandeja" FontWeight="Bold" FontSize="17" Margin="0,0,0,14"/>
                                             <CheckBox Content="Iniciar com o Windows" IsChecked="{Binding Settings.StartWithWindows}"/>
                                             <CheckBox Content="Iniciar minimizado" IsChecked="{Binding Settings.StartMinimized}"/>
                                             <CheckBox Content="Minimizar para a bandeja" IsChecked="{Binding Settings.MinimizeToTray}"/>
                                             <CheckBox Content="Ao fechar, continuar na bandeja" IsChecked="{Binding Settings.CloseToTray}"/>
                                         </StackPanel>
                                     </Border>
-                                    <Button Content="Salvar configurações" Command="{Binding SaveSettingsCommand}"/>
-                                    <Button Content="Restaurar padrões" Command="{Binding ResetSettingsCommand}" Style="{StaticResource GhostButton}" Margin="0,9,0,0"/>
+
+                                    <Button Content="Salvar configurações" Command="{Binding SaveSettingsCommand}" Height="42"/>
+                                    <Button Content="Restaurar padrões" Command="{Binding ResetSettingsCommand}" Style="{StaticResource GhostButton}" Margin="0,10,0,0" Height="42"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
 
-                <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="26,10">
-                    <Grid>
-                        <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis"/>
-                        <ProgressBar IsIndeterminate="True" Height="3" VerticalAlignment="Bottom"
+                <!-- Status bar -->
+                <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0">
+                    <Grid Margin="28,11">
+                        <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource MutedTextBrush}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                        <ProgressBar IsIndeterminate="True" Height="2" VerticalAlignment="Bottom"
                                      Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}"/>
                     </Grid>
                 </Border>
