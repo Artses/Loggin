@@ -14,6 +14,7 @@ public static class ThemeService
         var dark = settings.Theme == ThemePreference.Dark ||
                    settings.Theme == ThemePreference.System && IsWindowsDark();
 
+        // Main palette
         Set("PrimaryBrush", settings.PrimaryColor);
         Set("PrimaryHoverBrush", Darken(settings.PrimaryColor, 0.08));
         Set("SecondaryBrush", settings.SecondaryColor);
@@ -27,13 +28,55 @@ public static class ThemeService
         Set("BorderBrush", dark ? "#2D3344" : "#DDE2EE");
         Set("DangerBrush", DangerColor);
         Set("DangerHoverBrush", Darken(DangerColor, 0.10));
+        Set("SuccessBrush", dark ? "#34D399" : "#2DA44E");
 
+        // Sidebar
         var sidebarBg = dark ? "#11121B" : "#15131B";
         Set("SidebarBrush", sidebarBg);
         Set("SidebarTextBrush", "#C9C5D6");
         Set("SidebarActiveBrush", settings.PrimaryColor);
         Set("SidebarHoverBrush", Darken(sidebarBg, 0.30));
         Set("SidebarHeaderBrush", dark ? "#F5F7FC" : "#FFFFFF");
+
+        // Log Viewer — adapt to theme
+        if (dark)
+        {
+            Set("LogLevelTrace", "#9CA3AF");
+            Set("LogLevelDebug", "#60A5FA");
+            Set("LogLevelInfo", "#34D399");
+            Set("LogLevelWarning", "#FBBF24");
+            Set("LogLevelError", "#F87171");
+            Set("LogLevelFatal", "#EF4444");
+            Set("LogLevelNone", "#6B7280");
+
+            Set("LogRowError", "#450A0A");        // dark red bg
+            Set("LogRowFatal", "#450A0A");
+            Set("LogRowWarning", "#451A03");      // dark amber bg
+
+            Set("LogSearchHighlight", "#713F12"); // dark amber highlight
+            Set("LogTimeBrush", "#6B7280");
+            Set("LogCollectorBadgeBrush", "#312E81");
+            Set("LogCollectorBadgeText", "#C7D2FE");
+        }
+        else
+        {
+            Set("LogLevelTrace", "#6B7280");
+            Set("LogLevelDebug", "#3B82F6");
+            Set("LogLevelInfo", "#10B981");
+            Set("LogLevelWarning", "#F59E0B");
+            Set("LogLevelError", "#EF4444");
+            Set("LogLevelFatal", "#DC2626");
+            Set("LogLevelNone", "#9CA3AF");
+
+            Set("LogRowError", "#FEF2F2");
+            Set("LogRowFatal", "#FEF2F2");
+            Set("LogRowWarning", "#FFFBEB");
+
+            Set("LogSearchHighlight", "#FDE047");
+            Set("LogTimeBrush", "#9CA3AF");
+            Set("LogCollectorBadgeBrush", "#E0E7FF");
+            Set("LogCollectorBadgeText", "#4F46E5");
+        }
     }
 
     private static string Darken(string hex, double amount)

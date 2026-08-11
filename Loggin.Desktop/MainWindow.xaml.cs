@@ -150,4 +150,13 @@ public partial class MainWindow : Window
         Close();
         System.Windows.Application.Current.Shutdown();
     }
+
+    private void LogRow_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is Border border && border.DataContext is LogLineViewModel logLine)
+        {
+            logLine.IsExpanded = !logLine.IsExpanded;
+            e.Handled = true;
+        }
+    }
 }

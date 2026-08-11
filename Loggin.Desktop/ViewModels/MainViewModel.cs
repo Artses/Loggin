@@ -17,6 +17,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public const string PageSettings = "Settings";
 
     private const int MaxActivitySamples = 30;
+    private const int MaxLogLines = 5000;
 
     private readonly ApiClient _api = new();
     private readonly SettingsService _settingsService = new();
@@ -40,11 +41,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private string _logPath = "";
     private CollectorDto? _logCollector;
     private string _searchText = "";
+    private bool _useRegexSearch;
+    private bool _isLiveTail;
+    private LogLevel _levelFilter = LogLevel.None;
+    private CollectorDto? _collectorFilter;
     private DateTimeOffset? _lastSync;
 
     public ObservableCollection<CollectorDto> Collectors { get; } = [];
     public ObservableCollection<LogDto> Logs { get; } = [];
-    public ObservableCollection<LogLineDto> LogLines { get; } = [];
+    public ObservableCollection<LogLineViewModel> LogLines { get; } = [];
     public ObservableCollection<double> ActivityValues { get; } = [];
     public IReadOnlyList<ThemePreference> ThemeOptions { get; } = Enum.GetValues<ThemePreference>();
     public IReadOnlyList<string> Palettes { get; } = ["Padrão", "Oceano", "Floresta", "Pôr do sol", "Personalizada"];
@@ -98,7 +103,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     }
 
     public string AuthActionText => IsRegisterMode ? "Criar conta" : "Entrar";
-
     public string StatusMessage { get => _statusMessage; private set => Set(ref _statusMessage, value); }
 
     public ConnectionStatus ConnectionStatus
@@ -127,12 +131,71 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public string SearchText
     {
         get => _searchText;
-        set { if (Set(ref _searchText, value)) Raise(nameof(FilteredLogLines)); }
+        set
+        {
+            if (Set(ref _searchText, value))
+            {
+                Raise(nameof(FilteredLogLines));
+                ApplySearchHighlight();
+            }
+        }
     }
 
-    public IEnumerable<LogLineDto> FilteredLogLines => string.IsNullOrWhiteSpace(SearchText)
-        ? LogLines
-        : LogLines.Where(line => line.Line.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+    public bool UseRegexSearch
+    {
+        get => _useRegexSearch;
+        set { if (Set(ref _useRegexSearch, value)) ApplySearchHighlight(); }
+    }
+
+    public bool IsLiveTail
+    {
+        get => _isLiveTail;
+        set => Set(ref _isLiveTail, value);
+    }
+
+    public LogLevel LevelFilter
+    {
+        get => _levelFilter;
+        set { if (Set(ref _levelFilter, value)) Raise(nameof(FilteredLogLines)); }
+    }
+
+    public CollectorDto? CollectorFilter
+    {
+        get => _collectorFilter;
+        set { if (Set(ref _collectorFilter, value)) Raise(nameof(FilteredLogLines)); }
+    }
+
+    public IReadOnlyList<LogLevel> LevelFilterOptions { get; } = new[]
+    {
+        LogLevel.None, LogLevel.Trace, LogLevel.Debug, LogLevel.Info, LogLevel.Warning, LogLevel.Error, LogLevel.Fatal
+    };
+
+    public IEnumerable<CollectorDto> CollectorFilterOptions
+    {
+        get
+        {
+            yield return new CollectorDto(Guid.Empty, "Todos", "");
+            foreach (var c in Collectors) yield return c;
+        }
+    }
+
+    public IEnumerable<LogLineViewModel> FilteredLogLines
+    {
+        get
+        {
+            var baseLines = string.IsNullOrWhiteSpace(SearchText)
+                ? LogLines
+                : LogLines.Where(l => l.DisplayLine.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+
+            if (LevelFilter != LogLevel.None)
+                baseLines = baseLines.Where(l => l.Level == LevelFilter);
+
+            if (CollectorFilter is not null && CollectorFilter.Id != Guid.Empty)
+                baseLines = baseLines.Where(l => l.CollectorId == CollectorFilter.Id.ToString());
+
+            return IsLiveTail ? baseLines.OrderBy(l => l.TimeStamp) : baseLines.OrderByDescending(l => l.TimeStamp);
+        }
+    }
 
     public DateTimeOffset? LastSync
     {
@@ -206,6 +269,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public AsyncCommand FetchLogCommand { get; }
     public ICommand SaveSettingsCommand { get; }
     public ICommand ResetSettingsCommand { get; }
+    public RelayCommand<LogLineViewModel> CopyLogLineCommand { get; }
 
     public event EventHandler? SettingsRequested;
 
@@ -227,6 +291,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         FetchLogCommand = new AsyncCommand(FetchSelectedLogAsync, () => SelectedLog is not null);
         SaveSettingsCommand = new AsyncCommand(SaveSettingsAsync);
         ResetSettingsCommand = new AsyncCommand(ResetSettingsAsync);
+        CopyLogLineCommand = new RelayCommand<LogLineViewModel>(CopyLogLine);
     }
 
     public async Task InitializeAsync(bool startMinimized)
@@ -314,6 +379,13 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             SelectedLog = Logs.FirstOrDefault(l => l.Id == logId);
 
         LogCollector ??= Collectors.FirstOrDefault();
+
+        // Clear collector filter if it no longer exists
+        if (CollectorFilter is not null && CollectorFilter.Id != Guid.Empty &&
+            !Collectors.Any(c => c.Id == CollectorFilter.Id))
+        {
+            CollectorFilter = null;
+        }
         LastSync = DateTimeOffset.Now;
         ConnectionStatus = ConnectionStatus.Online;
         StatusMessage = "Dados atualizados.";
@@ -394,12 +466,19 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private async Task FetchSelectedLogCoreAsync(CancellationToken ct)
     {
-        if (SelectedLog is null)
-            return;
+        if (SelectedLog is null) return;
 
         var lines = await _api.FetchLogAsync(SelectedLog.Id, SelectedLog.CollectorId, ct);
+        var collectorName = SelectedLog.CollectorId.ToString();
+        var collector = Collectors.FirstOrDefault(c => c.Id == SelectedLog.CollectorId);
+        if (collector is not null) collectorName = collector.Name;
 
-        Replace(LogLines, lines.OrderByDescending(l => l.TimeStamp));
+        var ordered = lines.OrderByDescending(l => l.TimeStamp).ToList();
+        Replace(LogLines, ordered.Select(l => new LogLineViewModel(l, collectorName, SelectedLog.CollectorId.ToString())));
+
+        while (LogLines.Count > MaxLogLines)
+            LogLines.RemoveAt(LogLines.Count - 1);
+
         Raise(nameof(FilteredLogLines));
         Raise(nameof(CurrentLineCount));
 
@@ -408,6 +487,23 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             ActivityValues.RemoveAt(0);
 
         StatusMessage = $"{lines.Count} linhas recebidas.";
+    }
+
+    private void ApplySearchHighlight()
+    {
+        foreach (var line in LogLines)
+            line.UpdateHighlight(SearchText, UseRegexSearch);
+    }
+
+    private void CopyLogLine(LogLineViewModel? line)
+    {
+        if (line is null) return;
+        try
+        {
+            System.Windows.Clipboard.SetText(line.RawLine);
+            StatusMessage = "Linha copiada para a área de transferência.";
+        }
+        catch { }
     }
 
     public void ApplyPalette(string palette)
@@ -563,6 +659,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         SelectedLog = null;
         LogPath = "";
         LogCollector = Collectors.FirstOrDefault();
+        LogLines.Clear();
+        Raise(nameof(FilteredLogLines));
+        Raise(nameof(CurrentLineCount));
     }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> source)

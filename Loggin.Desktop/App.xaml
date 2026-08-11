@@ -2,11 +2,13 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:controls="clr-namespace:Loggin.Desktop.Controls"
              StartupUri="MainWindow.xaml"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <!-- Converters -->
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        <controls:InvertedBoolToVisibilityConverter x:Key="BoolToVisibilityInvert"/>
 
         <!-- Base color palette (overwritten by ThemeService at runtime) -->
         <SolidColorBrush x:Key="PrimaryBrush" Color="#6D5EF5"/>
@@ -28,6 +30,24 @@
         <SolidColorBrush x:Key="SidebarActiveBrush" Color="#6D5EF5"/>
         <SolidColorBrush x:Key="SidebarHoverBrush" Color="#221F2E"/>
         <SolidColorBrush x:Key="SidebarHeaderBrush" Color="#FFFFFF"/>
+
+        <!-- Log Viewer Colors -->
+        <SolidColorBrush x:Key="LogLevelTrace" Color="#6B7280"/>
+        <SolidColorBrush x:Key="LogLevelDebug" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="LogLevelInfo" Color="#10B981"/>
+        <SolidColorBrush x:Key="LogLevelWarning" Color="#F59E0B"/>
+        <SolidColorBrush x:Key="LogLevelError" Color="#EF4444"/>
+        <SolidColorBrush x:Key="LogLevelFatal" Color="#DC2626"/>
+        <SolidColorBrush x:Key="LogLevelNone" Color="#9CA3AF"/>
+
+        <SolidColorBrush x:Key="LogRowError" Color="#FEF2F2"/>
+        <SolidColorBrush x:Key="LogRowFatal" Color="#FEF2F2"/>
+        <SolidColorBrush x:Key="LogRowWarning" Color="#FFFBEB"/>
+
+        <SolidColorBrush x:Key="LogSearchHighlight" Color="#FDE047"/>
+        <SolidColorBrush x:Key="LogTimeBrush" Color="#9CA3AF"/>
+        <SolidColorBrush x:Key="LogCollectorBadgeBrush" Color="#E0E7FF"/>
+        <SolidColorBrush x:Key="LogCollectorBadgeText" Color="#4F46E5"/>
 
         <!-- Window -->
         <Style TargetType="Window">
@@ -526,6 +546,13 @@
             </Style.Triggers>
         </Style>
 
+        <!-- DataGridCell text element style -->
+        <Style x:Key="DataGridCellText" TargetType="TextBlock">
+            <Setter Property="Padding" Value="0,0,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        </Style>
+
         <!-- Card -->
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
@@ -585,6 +612,51 @@
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <!-- Log Viewer Converters -->
+        <controls:LogLevelToBrushConverter x:Key="LogLevelToBrush"/>
+        <controls:LogLevelToBackgroundConverter x:Key="LogLevelToBackground"/>
+        <controls:NotNullToVisibilityConverter x:Key="NotNullToVisibility"/>
+        <controls:LogLevelNotNoneToVisibilityConverter x:Key="LogLevelNotNone"/>
+        <controls:CountToVisibilityConverter x:Key="CountToVisibility"/>
+        <controls:LogLineSearchHighlightConverter x:Key="LogLineHighlighter"/>
+
+        <!-- Log List Item (used in ListView) -->
+        <Style x:Key="LogListItem" TargetType="ListViewItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border x:Name="RowBg"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="RowBg" Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RowBg" Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Log Expander Header Style -->
+        <Style x:Key="LogExpanderHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
         </Style>
     </Application.Resources>
 </Application>
