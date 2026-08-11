@@ -7,10 +7,13 @@ namespace Loggin.Desktop.Services;
 
 public static class ThemeService
 {
+    private const string DangerColor = "#E5484D";
+
     public static void Apply(AppSettings settings)
     {
         var dark = settings.Theme == ThemePreference.Dark ||
                    settings.Theme == ThemePreference.System && IsWindowsDark();
+
         Set("PrimaryBrush", settings.PrimaryColor);
         Set("PrimaryHoverBrush", Darken(settings.PrimaryColor, 0.08));
         Set("SecondaryBrush", settings.SecondaryColor);
@@ -22,38 +25,52 @@ public static class ThemeService
         Set("TextBrush", dark ? "#F5F7FC" : "#172033");
         Set("MutedTextBrush", dark ? "#9BA3BA" : "#687189");
         Set("BorderBrush", dark ? "#2D3344" : "#DDE2EE");
-        Set("DangerHoverBrush", Darken(settings.PrimaryColor == "#E5484D" ? settings.PrimaryColor : "#E5484D", 0.10));
+        Set("DangerBrush", DangerColor);
+        Set("DangerHoverBrush", Darken(DangerColor, 0.10));
 
-        // Sidebar stays dark in both themes for a consistent app identity
-        Set("SidebarBrush", dark ? "#11121B" : "#15131B");
-        Set("SidebarTextBrush", dark ? "#C9C5D6" : "#C9C5D6");
+        var sidebarBg = dark ? "#11121B" : "#15131B";
+        Set("SidebarBrush", sidebarBg);
+        Set("SidebarTextBrush", "#C9C5D6");
         Set("SidebarActiveBrush", settings.PrimaryColor);
-        Set("SidebarHoverBrush", dark ? "#1F2230" : "#221F2E");
+        Set("SidebarHoverBrush", Darken(sidebarBg, 0.30));
         Set("SidebarHeaderBrush", dark ? "#F5F7FC" : "#FFFFFF");
     }
 
     private static string Darken(string hex, double amount)
     {
-        try
+        if (TryParseColor(hex, out var c))
         {
-            var c = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex);
             var r = (byte)Math.Max(0, c.R * (1 - amount));
             var g = (byte)Math.Max(0, c.G * (1 - amount));
             var b = (byte)Math.Max(0, c.B * (1 - amount));
             return $"#{r:X2}{g:X2}{b:X2}";
         }
-        catch { return hex; }
+        return hex;
     }
 
-    public static bool IsValidColor(string value)
+    public static bool IsValidColor(string value) => TryParseColor(value, out _);
+
+    private static bool TryParseColor(string value, out System.Windows.Media.Color color)
     {
-        try { _ = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(value); return true; }
-        catch { return false; }
+        try
+        {
+            color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(value);
+            return true;
+        }
+        catch
+        {
+            color = default;
+            return false;
+        }
     }
 
-    private static void Set(string key, string value) =>
-        System.Windows.Application.Current.Resources[key] = new SolidColorBrush(
-            (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(value));
+    private static void Set(string key, string value)
+    {
+        var app = System.Windows.Application.Current;
+        if (app is null) return;
+        if (!TryParseColor(value, out var color)) return;
+        app.Resources[key] = new SolidColorBrush(color);
+    }
 
     private static bool IsWindowsDark()
     {

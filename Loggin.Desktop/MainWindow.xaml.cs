@@ -31,6 +31,7 @@ public partial class MainWindow : Window
         Loaded += OnLoaded;
         Closing += OnClosing;
         StateChanged += OnStateChanged;
+        _vm_Highlight = HighlightNav;
         _viewModel.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(MainViewModel.ActivePage) || e.PropertyName == nameof(MainViewModel.IsShellVisible))
@@ -38,16 +39,19 @@ public partial class MainWindow : Window
         };
     }
 
+    private readonly Action<string> _vm_Highlight;
+
     private void HighlightNav(string page)
     {
+        if (!IsLoaded) return;
         var activeStyle = (Style)FindResource("NavButtonActive");
         var normalStyle = (Style)FindResource("NavButton");
         var map = new System.Collections.Generic.Dictionary<string, System.Windows.Controls.Button>
         {
-            ["Dashboard"] = NavDashboard,
-            ["Collectors"] = NavCollectors,
-            ["Logs"] = NavLogs,
-            ["Settings"] = NavSettings
+            [MainViewModel.PageDashboard] = NavDashboard,
+            [MainViewModel.PageCollectors] = NavCollectors,
+            [MainViewModel.PageLogs] = NavLogs,
+            [MainViewModel.PageSettings] = NavSettings
         };
         foreach (var (key, btn) in map)
             btn.Style = key == page ? activeStyle : normalStyle;
@@ -55,16 +59,17 @@ public partial class MainWindow : Window
 
     private void NavButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender == NavDashboard) _viewModel.ActivePage = "Dashboard";
-        else if (sender == NavCollectors) _viewModel.ActivePage = "Collectors";
-        else if (sender == NavLogs) _viewModel.ActivePage = "Logs";
-        else if (sender == NavSettings) _viewModel.ActivePage = "Settings";
+        if (sender == NavDashboard) _viewModel.ActivePage = MainViewModel.PageDashboard;
+        else if (sender == NavCollectors) _viewModel.ActivePage = MainViewModel.PageCollectors;
+        else if (sender == NavLogs) _viewModel.ActivePage = MainViewModel.PageLogs;
+        else if (sender == NavSettings) _viewModel.ActivePage = MainViewModel.PageSettings;
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private async void OnLoaded(object o, RoutedEventArgs e)
     {
         var minimized = Environment.GetCommandLineArgs().Contains("--minimized", StringComparer.OrdinalIgnoreCase);
         await _viewModel.InitializeAsync(minimized);
+        HighlightNav(_viewModel.ActivePage);
         if (minimized || _viewModel.Settings.StartMinimized)
             HideToTray(showHint: false);
     }
@@ -76,7 +81,7 @@ public partial class MainWindow : Window
         menu.Items.Add("Configurações", null, (_, _) => Dispatcher.Invoke(() =>
         {
             RestoreWindow();
-            _viewModel.ActivePage = "Settings";
+            _viewModel.ActivePage = MainViewModel.PageSettings;
         }));
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Encerrar", null, (_, _) => Dispatcher.Invoke(ExitApplication));
@@ -86,8 +91,11 @@ public partial class MainWindow : Window
     private void PasswordInput_OnPasswordChanged(object sender, RoutedEventArgs e) =>
         _viewModel.Password = ((PasswordBox)sender).Password;
 
-    private void ToggleAuthMode_OnClick(object sender, RoutedEventArgs e) =>
+    private void ToggleAuthMode_OnClick(object sender, RoutedEventArgs e)
+    {
         _viewModel.IsRegisterMode = !_viewModel.IsRegisterMode;
+        PasswordInput.Clear();
+    }
 
     private void PreviewTheme_OnClick(object sender, RoutedEventArgs e) => _viewModel.PreviewTheme();
 
@@ -97,13 +105,13 @@ public partial class MainWindow : Window
             _viewModel.ApplyPalette(palette);
     }
 
-    private void OnStateChanged(object? sender, EventArgs e)
+    private void OnStateChanged(object? o, EventArgs e)
     {
         if (WindowState == WindowState.Minimized && _viewModel.Settings.MinimizeToTray)
             HideToTray(showHint: true);
     }
 
-    private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    private void OnClosing(object? o, System.ComponentModel.CancelEventArgs e)
     {
         if (_allowClose) return;
         if (_viewModel.Settings.CloseToTray)

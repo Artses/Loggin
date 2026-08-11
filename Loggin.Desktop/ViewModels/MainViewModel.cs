@@ -11,12 +11,19 @@ namespace Loggin.Desktop.ViewModels;
 
 public sealed class MainViewModel : ObservableObject, IDisposable
 {
+    public const string PageDashboard = "Dashboard";
+    public const string PageCollectors = "Collectors";
+    public const string PageLogs = "Logs";
+    public const string PageSettings = "Settings";
+
+    private const int MaxActivitySamples = 30;
+
     private readonly ApiClient _api = new();
     private readonly SettingsService _settingsService = new();
     private readonly CredentialService _credentialService = new();
     private CancellationTokenSource? _monitorCts;
     private AppSettings _settings = AppSettings.Default();
-    private string _activePage = "Dashboard";
+    private string _activePage = PageDashboard;
     private bool _isAuthenticated;
     private bool _isBusy;
     private bool _isRegisterMode;
@@ -42,16 +49,64 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public IReadOnlyList<ThemePreference> ThemeOptions { get; } = Enum.GetValues<ThemePreference>();
     public IReadOnlyList<string> Palettes { get; } = ["Padrão", "Oceano", "Floresta", "Pôr do sol", "Personalizada"];
 
-    public AppSettings Settings { get => _settings; private set { _settings = value; Raise(); } }
-    public string ActivePage { get => _activePage; set { if (Set(ref _activePage, value)) RaisePageVisibility(); } }
-    public bool IsAuthenticated { get => _isAuthenticated; private set { if (Set(ref _isAuthenticated, value)) { Raise(nameof(IsLoginVisible)); Raise(nameof(IsShellVisible)); } } }
+    public AppSettings Settings
+    {
+        get => _settings;
+        private set
+        {
+            if (Set(ref _settings, value))
+            {
+                Raise(nameof(Settings.PrimaryColor));
+                Raise(nameof(Settings.SecondaryColor));
+                Raise(nameof(Settings.AccentColor));
+                Raise(nameof(Settings.BackendUrl));
+            }
+        }
+    }
+
+    public string ActivePage
+    {
+        get => _activePage;
+        set
+        {
+            if (Set(ref _activePage, value))
+                RaisePageVisibility();
+        }
+    }
+
+    public bool IsAuthenticated
+    {
+        get => _isAuthenticated;
+        private set
+        {
+            if (Set(ref _isAuthenticated, value))
+            {
+                Raise(nameof(IsLoginVisible));
+                Raise(nameof(IsShellVisible));
+            }
+        }
+    }
+
     public bool IsLoginVisible => !IsAuthenticated;
     public bool IsShellVisible => IsAuthenticated;
     public bool IsBusy { get => _isBusy; private set => Set(ref _isBusy, value); }
-    public bool IsRegisterMode { get => _isRegisterMode; set { if (Set(ref _isRegisterMode, value)) Raise(nameof(AuthActionText)); } }
+
+    public bool IsRegisterMode
+    {
+        get => _isRegisterMode;
+        set { if (Set(ref _isRegisterMode, value)) Raise(nameof(AuthActionText)); }
+    }
+
     public string AuthActionText => IsRegisterMode ? "Criar conta" : "Entrar";
+
     public string StatusMessage { get => _statusMessage; private set => Set(ref _statusMessage, value); }
-    public ConnectionStatus ConnectionStatus { get => _connectionStatus; private set { if (Set(ref _connectionStatus, value)) Raise(nameof(ConnectionText)); } }
+
+    public ConnectionStatus ConnectionStatus
+    {
+        get => _connectionStatus;
+        private set { if (Set(ref _connectionStatus, value)) Raise(nameof(ConnectionText)); }
+    }
+
     public string ConnectionText => ConnectionStatus switch
     {
         ConnectionStatus.Online => "Conectado",
@@ -59,6 +114,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         ConnectionStatus.Reconnecting => "Reconectando",
         _ => "Offline"
     };
+
     public string UserName { get => _userName; private set => Set(ref _userName, value); }
     public string Email { get => _email; set => Set(ref _email, value); }
     public string Password { get => _password; set => Set(ref _password, value); }
@@ -67,20 +123,32 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public string CollectorUrl { get => _collectorUrl; set => Set(ref _collectorUrl, value); }
     public string LogPath { get => _logPath; set => Set(ref _logPath, value); }
     public CollectorDto? LogCollector { get => _logCollector; set => Set(ref _logCollector, value); }
-    public string SearchText { get => _searchText; set { if (Set(ref _searchText, value)) Raise(nameof(FilteredLogLines)); } }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set { if (Set(ref _searchText, value)) Raise(nameof(FilteredLogLines)); }
+    }
+
     public IEnumerable<LogLineDto> FilteredLogLines => string.IsNullOrWhiteSpace(SearchText)
         ? LogLines
         : LogLines.Where(line => line.Line.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
-    public DateTimeOffset? LastSync { get => _lastSync; private set { if (Set(ref _lastSync, value)) Raise(nameof(LastSyncText)); } }
+
+    public DateTimeOffset? LastSync
+    {
+        get => _lastSync;
+        private set { if (Set(ref _lastSync, value)) Raise(nameof(LastSyncText)); }
+    }
+
     public string LastSyncText => LastSync is null ? "Nunca sincronizado" : $"Sincronizado às {LastSync:HH:mm:ss}";
     public string Version => Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.1";
     public int CollectorCount => Collectors.Count;
     public int LogCount => Logs.Count;
     public int CurrentLineCount => LogLines.Count;
-    public bool IsDashboardVisible => ActivePage == "Dashboard";
-    public bool IsCollectorsVisible => ActivePage == "Collectors";
-    public bool IsLogsVisible => ActivePage == "Logs";
-    public bool IsSettingsVisible => ActivePage == "Settings";
+    public bool IsDashboardVisible => ActivePage == PageDashboard;
+    public bool IsCollectorsVisible => ActivePage == PageCollectors;
+    public bool IsLogsVisible => ActivePage == PageLogs;
+    public bool IsSettingsVisible => ActivePage == PageSettings;
 
     public CollectorDto? SelectedCollector
     {
@@ -143,10 +211,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public MainViewModel()
     {
-        NavigateDashboardCommand = new RelayCommand(() => ActivePage = "Dashboard");
-        NavigateCollectorsCommand = new RelayCommand(() => ActivePage = "Collectors");
-        NavigateLogsCommand = new RelayCommand(() => ActivePage = "Logs");
-        NavigateSettingsCommand = new RelayCommand(() => { ActivePage = "Settings"; SettingsRequested?.Invoke(this, EventArgs.Empty); });
+        NavigateDashboardCommand = new RelayCommand(() => ActivePage = PageDashboard);
+        NavigateCollectorsCommand = new RelayCommand(() => ActivePage = PageCollectors);
+        NavigateLogsCommand = new RelayCommand(() => ActivePage = PageLogs);
+        NavigateSettingsCommand = new RelayCommand(() => { ActivePage = PageSettings; SettingsRequested?.Invoke(this, EventArgs.Empty); });
         AuthenticateCommand = new AsyncCommand(AuthenticateAsync);
         LogoutCommand = new RelayCommand(Logout);
         RefreshCommand = new AsyncCommand(() => RefreshAllAsync(CancellationToken.None));
@@ -274,7 +342,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private async Task DeleteCollectorAsync()
     {
         if (SelectedCollector is null) return;
-        if (System.Windows.MessageBox.Show($"Excluir o coletor “{SelectedCollector.Name}”?", "Confirmar exclusão",
+        if (System.Windows.MessageBox.Show($"Excluir o coletor \"{SelectedCollector.Name}\"?", "Confirmar exclusão",
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
         await RunOperationAsync(async ct =>
         {
@@ -307,7 +375,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private async Task DeleteLogAsync()
     {
         if (SelectedLog is null) return;
-        if (System.Windows.MessageBox.Show($"Excluir a fonte “{SelectedLog.Path}”?", "Confirmar exclusão",
+        if (System.Windows.MessageBox.Show($"Excluir a fonte \"{SelectedLog.Path}\"?", "Confirmar exclusão",
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
         await RunOperationAsync(async ct =>
         {
@@ -326,7 +394,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private async Task FetchSelectedLogCoreAsync(CancellationToken ct)
     {
-        if (SelectedLog is null) 
+        if (SelectedLog is null)
             return;
 
         var lines = await _api.FetchLogAsync(SelectedLog.Id, SelectedLog.CollectorId, ct);
@@ -334,9 +402,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Replace(LogLines, lines.OrderByDescending(l => l.TimeStamp));
         Raise(nameof(FilteredLogLines));
         Raise(nameof(CurrentLineCount));
-        ActivityValues.Add(lines.Count);
 
-        while (ActivityValues.Count > 30) 
+        ActivityValues.Add(lines.Count);
+        if (ActivityValues.Count > MaxActivitySamples)
             ActivityValues.RemoveAt(0);
 
         StatusMessage = $"{lines.Count} linhas recebidas.";
@@ -351,7 +419,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             "Pôr do sol" => ("#E11D48", "#F97316", "#FBBF24"),
             _ => ("#6D5EF5", "#20C7B7", "#F59E0B")
         };
-        Raise(nameof(Settings));
+        Raise(nameof(Settings.PrimaryColor));
+        Raise(nameof(Settings.SecondaryColor));
+        Raise(nameof(Settings.AccentColor));
         ThemeService.Apply(Settings);
     }
 
@@ -432,12 +502,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private async Task RunOperationAsync(Func<CancellationToken, Task> operation, string fallback,
         CancellationToken externalToken = default)
     {
-        if (IsBusy && externalToken == default) return;
+        if (IsBusy) return;
         IsBusy = true;
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(externalToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(Settings.TimeoutSeconds + 2, 5, 305)));
         try { await operation(timeout.Token); }
-        catch (OperationCanceledException) when (!externalToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (!externalToken.IsCancellationRequested && timeout.IsCancellationRequested)
         {
             ConnectionStatus = ConnectionStatus.Offline;
             StatusMessage = "A operação excedeu o tempo limite.";
@@ -465,6 +535,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     }
 
     private void Logout() => Logout("Sessão encerrada.");
+
     private void Logout(string message)
     {
         _monitorCts?.Cancel();

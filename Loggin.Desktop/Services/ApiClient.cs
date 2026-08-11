@@ -43,23 +43,45 @@ public sealed class ApiClient : IDisposable
 
     public Task<List<CollectorDto>> GetCollectorsAsync(CancellationToken ct) =>
         SendAsync<List<CollectorDto>>(HttpMethod.Get, "api/Collector", null, ct);
+
     public Task<CollectorDto> AddCollectorAsync(string name, string url, CancellationToken ct) =>
         SendAsync<CollectorDto>(HttpMethod.Post, "api/Collector", new { name, url }, ct);
+
     public Task<CollectorDto> UpdateCollectorAsync(Guid id, string name, string url, CancellationToken ct) =>
         SendAsync<CollectorDto>(HttpMethod.Put, "api/Collector", new { id, name, url }, ct);
+
     public Task DeleteCollectorAsync(Guid id, CancellationToken ct) =>
         SendNoContentAsync(HttpMethod.Delete, "api/Collector", new { id }, ct);
 
     public Task<List<LogDto>> GetLogsAsync(CancellationToken ct) =>
         SendAsync<List<LogDto>>(HttpMethod.Get, "api/Log", null, ct);
+
     public Task<LogDto> AddLogAsync(Guid collectorId, string path, CancellationToken ct) =>
         SendAsync<LogDto>(HttpMethod.Post, "api/Log", new { collectorId, path }, ct);
+
     public Task<LogDto> UpdateLogAsync(Guid id, Guid collectorId, string path, CancellationToken ct) =>
         SendAsync<LogDto>(HttpMethod.Put, "api/Log", new { id, collectorId, path }, ct);
+
     public Task DeleteLogAsync(Guid id, CancellationToken ct) =>
         SendNoContentAsync(HttpMethod.Delete, "api/Log", new { id }, ct);
+
     public Task<List<LogLineDto>> FetchLogAsync(Guid id, Guid collectorId, CancellationToken ct) =>
         SendAsync<List<LogLineDto>>(HttpMethod.Post, "api/Log/GetLogs", new { id, collectorId }, ct);
+
+    private static async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        if (response.IsSuccessStatusCode)
+            return;
+        var message = response.ReasonPhrase ?? "Falha na comunicação com o backend.";
+        try
+        {
+            var error = await response.Content.ReadFromJsonAsync<ApiError>(JsonOptions, ct);
+            if (!string.IsNullOrWhiteSpace(error?.Message))
+                message = error.Message;
+        }
+        catch { }
+        throw new ApiException(message, response.StatusCode);
+    }
 
     private async Task SendNoContentAsync(HttpMethod method, string path, object? body, CancellationToken ct)
     {
@@ -83,21 +105,6 @@ public sealed class ApiClient : IDisposable
         if (body is not null)
             request.Content = new StringContent(JsonSerializer.Serialize(body, JsonOptions), Encoding.UTF8, "application/json");
         return await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-    }
-
-    private static async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken ct)
-    {
-        if (response.IsSuccessStatusCode)
-            return;
-        var message = response.ReasonPhrase ?? "Falha na comunicação com o backend.";
-        try
-        {
-            var error = await response.Content.ReadFromJsonAsync<ApiError>(JsonOptions, ct);
-            if (!string.IsNullOrWhiteSpace(error?.Message))
-                message = error.Message;
-        }
-        catch { }
-        throw new ApiException(message, response.StatusCode);
     }
 
     public void Dispose() => _httpClient.Dispose();

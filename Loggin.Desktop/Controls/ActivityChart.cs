@@ -3,24 +3,41 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
+using WpfBrush = System.Windows.Media.Brush;
+using WpfBrushes = System.Windows.Media.Brushes;
+using WpfColor = System.Windows.Media.Color;
+using WpfPen = System.Windows.Media.Pen;
+using WpfPoint = System.Windows.Point;
 
 namespace Loggin.Desktop.Controls;
 
 public sealed class ActivityChart : FrameworkElement
 {
+    private const double TopPadding = 10.0;
+    private const double BottomPadding = 14.0;
+    private const double LineThickness = 2.5;
+    private const double DotRadius = 5.0;
+
     public static readonly DependencyProperty ValuesProperty = DependencyProperty.Register(
         nameof(Values), typeof(IEnumerable), typeof(ActivityChart),
         new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender, OnValuesChanged));
 
-    public IEnumerable? Values { get => (IEnumerable?)GetValue(ValuesProperty); set => SetValue(ValuesProperty, value); }
+    public IEnumerable? Values
+    {
+        get => (IEnumerable?)GetValue(ValuesProperty);
+        set => SetValue(ValuesProperty, value);
+    }
+
     private INotifyCollectionChanged? _observable;
 
     private static void OnValuesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var chart = (ActivityChart)d;
-        if (chart._observable is not null) chart._observable.CollectionChanged -= chart.OnCollectionChanged;
+        if (chart._observable is not null)
+            chart._observable.CollectionChanged -= chart.OnCollectionChanged;
         chart._observable = e.NewValue as INotifyCollectionChanged;
-        if (chart._observable is not null) chart._observable.CollectionChanged += chart.OnCollectionChanged;
+        if (chart._observable is not null)
+            chart._observable.CollectionChanged += chart.OnCollectionChanged;
         chart.InvalidateVisual();
     }
 
@@ -30,93 +47,137 @@ public sealed class ActivityChart : FrameworkElement
     {
         base.OnRender(dc);
 
-        System.Windows.Media.Brush primary = (System.Windows.Media.Brush)(TryFindResource("PrimaryBrush") ?? System.Windows.Media.Brushes.MediumSlateBlue);
-        System.Windows.Media.Brush gridBrush = (System.Windows.Media.Brush)(TryFindResource("BorderBrush") ?? System.Windows.Media.Brushes.LightGray);
-        System.Windows.Media.Brush muted = (System.Windows.Media.Brush)(TryFindResource("MutedTextBrush") ?? System.Windows.Media.Brushes.Gray);
+        var primary = (WpfBrush)(TryFindResource("PrimaryBrush") ?? WpfBrushes.MediumSlateBlue);
+        var gridBrush = (WpfBrush)(TryFindResource("BorderBrush") ?? WpfBrushes.LightGray);
+        var muted = (WpfBrush)(TryFindResource("MutedTextBrush") ?? WpfBrushes.Gray);
 
-        double width = ActualWidth;
-        double height = ActualHeight;
-        double topPadding = 10.0;
-        double bottomPadding = 14.0;
+        var width = ActualWidth;
+        var height = ActualHeight;
+        if (width <= 0 || height <= 0) return;
 
-        var gridPen = new System.Windows.Media.Pen(gridBrush, 1) { DashStyle = DashStyles.Dash };
-        for (int i = 1; i < 4; i++)
-        {
-            double y = topPadding + (height - topPadding - bottomPadding) * i / 4;
-            dc.DrawLine(gridPen, new System.Windows.Point(0, y), new System.Windows.Point(width, y));
-        }
+        var dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
 
-        double[] values = Values?.Cast<object>().Select(Convert.ToDouble).ToArray() ?? System.Array.Empty<double>();
+        DrawGridLines(dc, gridBrush, width, height);
+
+        var values = Values?.Cast<object>().Select(Convert.ToDouble).ToArray() ?? Array.Empty<double>();
 
         if (values.Length == 0)
         {
-            var text = new FormattedText("A atividade aparecerá após a coleta dos logs.",
-                CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
-                new Typeface("Segoe UI"), 13, muted,
-                VisualTreeHelper.GetDpi(this).PixelsPerDip);
-            dc.DrawText(text, new System.Windows.Point(Math.Max(0, (width - text.Width) / 2),
-                Math.Max(0, (height - text.Height) / 2)));
+            DrawEmptyState(dc, muted, width, height, dpi);
             return;
         }
 
-        double max = Math.Max(1, values.Max());
-        double chartHeight = height - topPadding - bottomPadding;
+        var max = Math.Max(1, values.Max(v => Math.Max(0, v)));
+        var chartHeight = height - TopPadding - BottomPadding;
+        var points = ComputePoints(values, max, width, chartHeight);
 
-        var points = new System.Windows.Point[values.Length];
-        for (int i = 0; i < values.Length; i++)
+        DrawAreaFill(dc, primary, points, height);
+        DrawBaseline(dc, gridBrush, width, height);
+        DrawLine(dc, primary, points);
+        DrawEndPointDot(dc, primary, points[^1]);
+        DrawValueLabel(dc, muted, values[^1], points[^1], dpi);
+    }
+
+    private static void DrawGridLines(DrawingContext dc, WpfBrush gridBrush, double width, double height)
+    {
+        var gridPen = new WpfPen(gridBrush, 1) { DashStyle = DashStyles.Dash };
+        for (var i = 1; i < 4; i++)
         {
-            double x = values.Length == 1 ? width / 2 : i * width / (values.Length - 1);
-            double y = topPadding + chartHeight - values[i] / max * chartHeight;
-            points[i] = new System.Windows.Point(x, y);
+            var y = TopPadding + (height - TopPadding - BottomPadding) * i / 4;
+            dc.DrawLine(gridPen, new WpfPoint(0, y), new WpfPoint(width, y));
         }
+    }
 
-        var fillGeometry = new StreamGeometry();
-        using (var ctx = fillGeometry.Open())
+    private static void DrawEmptyState(DrawingContext dc, WpfBrush muted, double width, double height, double dpi)
+    {
+        var text = new FormattedText(
+            "A atividade aparecerá após a coleta dos logs.",
+            CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
+            new Typeface("Segoe UI"), 13, muted, dpi);
+        dc.DrawText(text, new WpfPoint(
+            Math.Max(0, (width - text.Width) / 2),
+            Math.Max(0, (height - text.Height) / 2)));
+    }
+
+    private static WpfPoint[] ComputePoints(double[] values, double max, double width, double chartHeight)
+    {
+        var points = new WpfPoint[values.Length];
+        for (var i = 0; i < values.Length; i++)
         {
-            ctx.BeginFigure(new System.Windows.Point(points[0].X, height - bottomPadding), true, true);
+            var x = values.Length == 1 ? width / 2 : i * width / (values.Length - 1);
+            var y = TopPadding + chartHeight - Math.Max(0, values[i]) / max * chartHeight;
+            points[i] = new WpfPoint(x, y);
+        }
+        return points;
+    }
+
+    private static void DrawAreaFill(DrawingContext dc, WpfBrush primary, WpfPoint[] points, double height)
+    {
+        var geometry = new StreamGeometry();
+        using (var ctx = geometry.Open())
+        {
+            ctx.BeginFigure(new WpfPoint(points[0].X, height - BottomPadding), true, true);
             foreach (var pt in points)
                 ctx.LineTo(pt, true, false);
-            ctx.LineTo(new System.Windows.Point(points[^1].X, height - bottomPadding), true, false);
+            ctx.LineTo(new WpfPoint(points[^1].X, height - BottomPadding), true, false);
         }
 
-        var primaryColor = ((System.Windows.Media.SolidColorBrush)primary).Color;
-        var transparentColor = System.Windows.Media.Color.FromArgb(0, primaryColor.R, primaryColor.G, primaryColor.B);
-        var gradientFill = new LinearGradientBrush(
+        if (primary is not SolidColorBrush sb) return;
+        var baseColor = sb.Color;
+        var transparent = WpfColor.FromArgb(0, baseColor.R, baseColor.G, baseColor.B);
+        var gradient = new LinearGradientBrush(
             new GradientStopCollection
             {
-                new GradientStop(primaryColor, 0.0),
-                new GradientStop(transparentColor, 1.0),
+                new GradientStop(baseColor, 0.0),
+                new GradientStop(transparent, 1.0)
             })
         {
-            StartPoint = new System.Windows.Point(0, 0),
-            EndPoint = new System.Windows.Point(0, 1),
+            StartPoint = new WpfPoint(0, 0),
+            EndPoint = new WpfPoint(0, 1)
         };
-        dc.DrawGeometry(gradientFill, null, fillGeometry);
+        dc.DrawGeometry(gradient, null, geometry);
+    }
 
-        var basePen = new System.Windows.Media.Pen(gridBrush, 1.5);
-        dc.DrawLine(basePen,
-            new System.Windows.Point(0, height - bottomPadding),
-            new System.Windows.Point(width, height - bottomPadding));
+    private static void DrawBaseline(DrawingContext dc, WpfBrush gridBrush, double width, double height)
+    {
+        dc.DrawLine(
+            new WpfPen(gridBrush, 1.5),
+            new WpfPoint(0, height - BottomPadding),
+            new WpfPoint(width, height - BottomPadding));
+    }
 
-        var lineGeometry = new StreamGeometry();
-        using (var ctx = lineGeometry.Open())
+    private static void DrawLine(DrawingContext dc, WpfBrush primary, WpfPoint[] points)
+    {
+        var geometry = new StreamGeometry();
+        using (var ctx = geometry.Open())
         {
             ctx.BeginFigure(points[0], false, false);
-            for (int i = 1; i < points.Length; i++)
+            for (var i = 1; i < points.Length; i++)
                 ctx.LineTo(points[i], true, false);
         }
-        var linePen = new System.Windows.Media.Pen(primary, 2.5) { LineJoin = PenLineJoin.Round };
-        dc.DrawGeometry(null, linePen, lineGeometry);
+        var pen = new WpfPen(primary, LineThickness) { LineJoin = PenLineJoin.Round };
+        dc.DrawGeometry(null, pen, geometry);
+    }
 
-        var last = points[^1];
-        var dotPen = new System.Windows.Media.Pen(primary, 2.5);
-        dc.DrawEllipse(System.Windows.Media.Brushes.White, dotPen, last, 5, 5);
+    private static void DrawEndPointDot(DrawingContext dc, WpfBrush primary, WpfPoint last)
+    {
+        dc.DrawEllipse(
+            WpfBrushes.White,
+            new WpfPen(primary, LineThickness),
+            last,
+            DotRadius,
+            DotRadius);
+    }
 
+    private static void DrawValueLabel(DrawingContext dc, WpfBrush muted, double value, WpfPoint anchor, double dpi)
+    {
         var label = new FormattedText(
-            values[^1].ToString("0", CultureInfo.CurrentCulture),
-            CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
-            new Typeface("Segoe UI"), 10, muted,
-            VisualTreeHelper.GetDpi(this).PixelsPerDip);
-        dc.DrawText(label, new System.Windows.Point(last.X + 8, Math.Max(topPadding, last.Y - label.Height - 4)));
+            value.ToString("0", CultureInfo.CurrentCulture),
+            CultureInfo.CurrentCulture,
+            System.Windows.FlowDirection.LeftToRight,
+            new Typeface("Segoe UI"), 10, muted, dpi);
+        dc.DrawText(label, new WpfPoint(
+            anchor.X + 8,
+            Math.Max(TopPadding, anchor.Y - label.Height - 4)));
     }
 }
